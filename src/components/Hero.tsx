@@ -5,6 +5,8 @@ import Image from 'next/image';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ArrowDown, ArrowUpRight } from 'lucide-react';
+import HeroFabricDrape from '@/components/HeroFabricDrape';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 export default function Hero() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -113,15 +115,20 @@ export default function Hero() {
       ref={sectionRef}
       className="relative min-h-[100svh] w-full flex flex-col justify-between pt-28 pb-12 px-6 lg:px-12 bg-atelier-bg overflow-hidden border-b border-atelier-border/50"
     >
+      {/* 3D Atmospheric Background Layer (discreto, sutil e fluído ao fundo) */}
+      <ErrorBoundary>
+        <HeroFabricDrape />
+      </ErrorBoundary>
+
       {/* Top Banner Tag / Kicker */}
-      <div className="max-w-7xl mx-auto w-full flex justify-between items-center text-xs tracking-ultra uppercase text-atelier-stone pt-2">
+      <div className="relative z-10 max-w-7xl mx-auto w-full flex justify-between items-center text-xs tracking-ultra uppercase text-atelier-stone pt-2">
         <span>Coleção Permanente · 2026</span>
         <span className="hidden sm:inline">Edição Fibras Nobres</span>
         <span>São Paulo · Tear Autoral</span>
       </div>
 
       {/* Main Grid: Editorial Typography + Asymmetric Hero Photography */}
-      <div className="max-w-7xl mx-auto w-full my-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center py-8">
+      <div className="relative z-10 max-w-7xl mx-auto w-full my-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center py-8">
         {/* Left Column: Headlines & Editorial Copy */}
         <div className="lg:col-span-7 flex flex-col justify-center z-10">
           <div className="overflow-hidden mb-2">
@@ -169,7 +176,7 @@ export default function Hero() {
         </div>
 
         {/* Right Column: Fashion Editorial Photography with Asymmetric Frame */}
-        <div className="lg:col-span-5 relative w-full h-[380px] sm:h-[480px] lg:h-[580px] flex items-center justify-center">
+        <div className="lg:col-span-5 relative w-full h-[380px] sm:h-[480px] lg:h-[580px] flex items-center justify-center z-10">
           <div
             ref={imageWrapperRef}
             className="relative w-full h-full rounded-2xl overflow-hidden shadow-2xl bg-atelier-sand/20"
@@ -198,7 +205,7 @@ export default function Hero() {
       {/* Bottom Bar: Scroll Indicator */}
       <div
         ref={scrollIndicatorRef}
-        className="max-w-7xl mx-auto w-full flex items-center justify-between pt-4 border-t border-atelier-border/40 text-xs tracking-widest uppercase text-atelier-stone/80"
+        className="relative z-10 max-w-7xl mx-auto w-full flex items-center justify-between pt-4 border-t border-atelier-border/40 text-xs tracking-widest uppercase text-atelier-stone/80"
       >
         <span className="flex items-center space-x-2">
           <span className="w-2 h-2 rounded-full bg-atelier-noir animate-pulse" />

@@ -12,6 +12,7 @@ import AtelierStory from '@/components/AtelierStory';
 import WhatsAppSection from '@/components/WhatsAppSection';
 import Footer from '@/components/Footer';
 import ProductModal from '@/components/ProductModal';
+import ErrorBoundary from '@/components/ErrorBoundary';
 import { Product } from '@/types';
 
 export default function Home() {
@@ -22,7 +23,7 @@ export default function Home() {
       {/* Navegação Fixa com Blur */}
       <Navbar />
 
-      {/* 1. Hero Cinematográfico com Sequência GSAP */}
+      {/* 1. Hero Cinematográfico com Sequência GSAP + Drapeado 3D Atmosférico de Fundo */}
       <Hero />
 
       {/* 2. Manifesto da Marca & Estudo Textural */}
@@ -31,8 +32,10 @@ export default function Home() {
       {/* 3. Coleção em Destaque (Origens & Silêncio) */}
       <FeaturedCollection onSelectProduct={(product) => setSelectedProduct(product)} />
 
-      {/* 4. Three.js: Experiência 3D Real do Tecido (The Fabric) */}
-      <FabricScene />
+      {/* 4. Three.js: Experiência 3D Refinada e Atmosférica (A Arquitetura da Trama) */}
+      <ErrorBoundary>
+        <FabricScene />
+      </ErrorBoundary>
 
       {/* 5. Caderno Visual · Lookbook Editorial */}
       <Lookbook />

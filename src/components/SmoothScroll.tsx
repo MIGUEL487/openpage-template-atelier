@@ -53,7 +53,6 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
       gsap.ticker.remove(updateRaf);
       lenis.destroy();
       lenisRef.current = null;
-      ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
     };
   }, []);
 
