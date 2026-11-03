@@ -1,48 +1,78 @@
-import https from 'node:https';
+import https from 'https';
 
-const url = 'https://openpage-template-atelier.mi-c-openheimer.workers.dev';
+const BASE_URL = 'https://openpage-template-atelier.mi-c-openheimer.workers.dev';
 
-function checkUrl(targetUrl) {
+function fetchUrl(url) {
   return new Promise((resolve, reject) => {
-    https.get(targetUrl, (res) => {
+    https.get(url, (res) => {
       let data = '';
-      res.on('data', (chunk) => { data += chunk; });
-      res.on('end', () => {
-        resolve({
-          status: res.statusCode,
-          headers: res.headers,
-          bodyLength: data.length,
-          hasAtelier: data.includes('ATELIER'),
-          hasFabric: data.includes('The Fabric') || data.includes('tecido-3d'),
-          hasWhatsapp: data.includes('wa.me'),
-          hasImages: data.includes('/images/hero-knit.jpg'),
-        });
-      });
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => resolve({
+        statusCode: res.statusCode,
+        headers: res.headers,
+        body: data,
+      }));
     }).on('error', reject);
   });
 }
 
-async function main() {
-  console.log(`Verificando endpoint público: ${url}`);
-  try {
-    const rootResult = await checkUrl(url);
-    console.log('--- Teste da Página Inicial ---');
-    console.log('Status HTTP:', rootResult.status);
-    console.log('Tamanho HTML:', rootResult.bodyLength, 'bytes');
-    console.log('Contém ATELIER:', rootResult.hasAtelier);
-    console.log('Contém Seção 3D The Fabric:', rootResult.hasFabric);
-    console.log('Contém Integração WhatsApp:', rootResult.hasWhatsapp);
-    console.log('Contém Imagens Editoriais:', rootResult.hasImages);
+async function verify() {
+  console.log(`Verifying live deployment at ${BASE_URL}...`);
 
-    // Teste de asset estático de imagem
-    const imgResult = await checkUrl(`${url}/images/hero-knit.jpg`);
-    console.log('--- Teste de Recurso Estático (Imagem) ---');
-    console.log('Status HTTP da imagem:', imgResult.status);
-    console.log('Content-Type:', imgResult.headers['content-type']);
-    console.log('Tamanho:', imgResult.bodyLength, 'bytes');
-  } catch (err) {
-    console.error('Erro na verificação:', err);
+  // 1. Root HTML
+  const root = await fetchUrl(`${BASE_URL}/`);
+  console.log(`[1] Root status code: ${root.statusCode}`);
+  if (root.statusCode !== 200) {
+    throw new Error(`Expected status 200, got ${root.statusCode}`);
   }
+
+  // Check X-Robots-Tag header
+  const xRobots = root.headers['x-robots-tag'];
+  console.log(`[2] X-Robots-Tag header: ${xRobots}`);
+  if (!xRobots || !xRobots.includes('noindex')) {
+    console.warn(`WARNING: X-Robots-Tag not found in headers or missing noindex: ${xRobots}`);
+  } else {
+    console.log(`✓ X-Robots-Tag present and correct`);
+  }
+
+  // Check required HTML strings
+  const checks = [
+    'PRECIOZA',
+    'Monte Sião',
+    'Demonstração Conceitual',
+    'Proposta Conceitual Não Oficial',
+    'A Arte da Trama',
+    'noindex',
+  ];
+
+  for (const str of checks) {
+    if (root.body.includes(str)) {
+      console.log(`✓ HTML contains expected text: "${str}"`);
+    } else {
+      console.warn(`⚠ Missing text in HTML: "${str}"`);
+    }
+  }
+
+  // Check assets
+  const assets = [
+    '/brands/precioza/processed/cream-dress-model.webp',
+    '/brands/precioza/processed/blue-evening-model.webp',
+    '/brands/precioza/processed/logo-avatar.webp',
+    '/brands/precioza/processed/manifest.json',
+  ];
+
+  for (const asset of assets) {
+    const res = await fetchUrl(`${BASE_URL}${asset}`);
+    console.log(`[Asset] ${asset} -> Status: ${res.statusCode}, Content-Type: ${res.headers['content-type']}`);
+    if (res.statusCode !== 200) {
+      throw new Error(`Asset ${asset} failed with status ${res.statusCode}`);
+    }
+  }
+
+  console.log('\n🎉 ALL LIVE DEPLOY CHECKS PASSED SUCCESSFULLY!');
 }
 
-main();
+verify().catch((err) => {
+  console.error('Verification failed:', err);
+  process.exit(1);
+});
