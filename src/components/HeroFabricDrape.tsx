@@ -5,13 +5,14 @@ import * as THREE from 'three';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { isWebGLAvailable } from '@/utils/webgl';
+import { siteConfig } from '@/config/site';
 
 export default function HeroFabricDrape() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [hasWebGL, setHasWebGL] = useState(false);
 
   useEffect(() => {
-    // 1. Verificação segura de WebGL sem tocar no canvas do Three.js
+    // 1. Verificação isolada de WebGL sem vazamento
     if (!isWebGLAvailable()) {
       return;
     }
@@ -22,10 +23,12 @@ export default function HeroFabricDrape() {
 
     // Prefers-reduced-motion check
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const isTouch = window.matchMedia('(pointer: coarse)').matches;
 
     // 2. Dimensões
     let width = container.clientWidth || window.innerWidth;
     let height = container.clientHeight || window.innerHeight;
+    const isMobile = width < 768;
 
     // 3. Cena e Câmera
     const scene = new THREE.Scene();
@@ -34,11 +37,11 @@ export default function HeroFabricDrape() {
     const camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 50);
     camera.position.set(0, 0, 5.0);
 
-    // 4. Renderer seguro com try/catch
+    // 4. Renderer seguro com parâmetros otimizados para performance
     let renderer: THREE.WebGLRenderer;
     try {
       renderer = new THREE.WebGLRenderer({
-        antialias: true,
+        antialias: !isMobile, // Desativa antialias no mobile para economizar GPU
         alpha: true,
         powerPreference: 'low-power',
       });
@@ -48,7 +51,10 @@ export default function HeroFabricDrape() {
       return;
     }
 
-    const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+    const dpr = isMobile
+      ? Math.min(window.devicePixelRatio || 1, 1.25)
+      : Math.min(window.devicePixelRatio || 1, 1.5);
+
     renderer.setSize(width, height);
     renderer.setPixelRatio(dpr);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -63,19 +69,23 @@ export default function HeroFabricDrape() {
     container.appendChild(renderer.domElement);
 
     // 5. Geometria de Drapeado Têxtil Suave
-    const isMobile = width < 768;
-    const segX = isMobile ? 32 : 54;
-    const segY = isMobile ? 24 : 40;
+    const segX = isMobile ? 24 : 48;
+    const segY = isMobile ? 18 : 36;
     const geometry = new THREE.PlaneGeometry(5.2, 3.4, segX, segY);
 
-    // Uniforms com tons claros neutros e iluminação suave de ateliê
+    // Calibração de cores com base na marca ativa
+    const isPrecioza = siteConfig.brand === 'precioza';
+    const colorBase = isPrecioza ? '#E5D8C3' : '#D9C8B3'; // Champanhe dourado suave
+    const colorShadow = isPrecioza ? '#C5B49D' : '#B8A99A'; // Sombra mineral
+    const colorSheen = isPrecioza ? '#FCFAF5' : '#FAF8F5'; // Brilho de seda
+
     const uniforms = {
       uTime: { value: 0 },
       uScroll: { value: 0 },
       uMouse: { value: new THREE.Vector2(0.5, 0.5) },
-      uColorBase: { value: new THREE.Color('#D9C8B3') }, // Bege areia suave
-      uColorShadow: { value: new THREE.Color('#B8A99A') }, // Sombra sutil mineral
-      uColorSheen: { value: new THREE.Color('#FAF8F5') }, // Brilho de seda crua
+      uColorBase: { value: new THREE.Color(colorBase) },
+      uColorShadow: { value: new THREE.Color(colorShadow) },
+      uColorSheen: { value: new THREE.Color(colorSheen) },
     };
 
     const vertexShader = `
@@ -94,7 +104,7 @@ export default function HeroFabricDrape() {
         float waveA = sin(pos.x * 1.8 + uTime * 0.45) * cos(pos.y * 1.4 + uTime * 0.35) * 0.18;
         float waveB = cos(pos.x * 3.2 - uTime * 0.25) * sin(pos.y * 2.6 + uTime * 0.3) * 0.06;
 
-        // Resposta ultra-suave ao ponteiro
+        // Resposta suave ao ponteiro
         float dist = distance(uv, uMouse);
         float ripple = exp(-dist * 5.0) * sin(dist * 16.0 - uTime * 1.5) * 0.04;
 
@@ -122,11 +132,11 @@ export default function HeroFabricDrape() {
         vec3 lightDir = normalize(vec3(1.5, 2.5, 3.0));
         vec3 viewDir = normalize(-vPosition);
 
-        // Iluminação difusa ultra-suave para tecido nobre
+        // Iluminação difusa suave para tecido nobre
         float NdotL = dot(normal, lightDir);
         float diffuse = clamp(NdotL * 0.5 + 0.5, 0.0, 1.0);
 
-        // Brilho aveludado leve (sheen de cashmere)
+        // Brilho aveludado leve (sheen de malharia/seda)
         float fresnel = pow(1.0 - max(dot(normal, viewDir), 0.0), 3.0) * 0.35;
 
         vec3 tone = mix(uColorShadow, uColorBase, diffuse);
@@ -136,7 +146,7 @@ export default function HeroFabricDrape() {
         float alpha = smoothstep(0.0, 0.15, vUv.x) * smoothstep(1.0, 0.85, vUv.x) *
                       smoothstep(0.0, 0.15, vUv.y) * smoothstep(1.0, 0.85, vUv.y);
 
-        gl_FragColor = vec4(finalColor, alpha * 0.38);
+        gl_FragColor = vec4(finalColor, alpha * 0.35);
       }
     `;
 
@@ -167,47 +177,88 @@ export default function HeroFabricDrape() {
       },
     });
 
-    // 7. Mouse Listener suave
+    // 7. Mouse Listener com throttling e desativado em touch
+    let mouseTimeout: number | null = null;
     const handleMouseMove = (e: MouseEvent) => {
+      if (isTouch) return;
+      if (mouseTimeout) return;
+
+      mouseTimeout = window.setTimeout(() => {
+        mouseTimeout = null;
+      }, 30);
+
       const rect = container.getBoundingClientRect();
       const normX = (e.clientX - rect.left) / rect.width;
       const normY = 1 - (e.clientY - rect.top) / rect.height;
 
-      gsap.to(uniforms.uMouse.value, {
-        x: normX,
-        y: normY,
-        duration: 1.2,
-        ease: 'power2.out',
-      });
+      uniforms.uMouse.value.x = normX;
+      uniforms.uMouse.value.y = normY;
     };
 
-    window.addEventListener('mousemove', handleMouseMove, { passive: true });
+    if (!isTouch) {
+      window.addEventListener('mousemove', handleMouseMove, { passive: true });
+    }
 
-    // 8. Loop de animação com IntersectionObserver
+    // 8. Loop de animação com pausa real do RAF quando invisível ou aba oculta
     let isVisible = true;
+    let isTabActive = document.visibilityState === 'visible';
     let isDisposed = false;
-    let animId: number;
+    let animId: number | null = null;
     const clock = new THREE.Clock();
 
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((e) => {
-        isVisible = e.isIntersecting;
-      });
-    }, { threshold: 0.05 });
+    const startRaf = () => {
+      if (animId !== null || isDisposed || prefersReducedMotion) return;
 
-    observer.observe(container);
+      const render = () => {
+        if (isDisposed) return;
+        if (isVisible && isTabActive) {
+          uniforms.uTime.value = clock.getElapsedTime();
+          renderer.render(scene, camera);
+          animId = requestAnimationFrame(render);
+        } else {
+          animId = null;
+        }
+      };
 
-    const render = () => {
-      if (isDisposed) return;
-      if (isVisible && !prefersReducedMotion) {
-        uniforms.uTime.value = clock.getElapsedTime();
-        renderer.render(scene, camera);
-      }
       animId = requestAnimationFrame(render);
     };
 
-    if (!prefersReducedMotion) {
-      render();
+    const stopRaf = () => {
+      if (animId !== null) {
+        cancelAnimationFrame(animId);
+        animId = null;
+      }
+    };
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          isVisible = e.isIntersecting;
+          if (isVisible && isTabActive) {
+            startRaf();
+          } else {
+            stopRaf();
+          }
+        });
+      },
+      { threshold: 0.05 }
+    );
+
+    observer.observe(container);
+
+    const handleVisibilityChange = () => {
+      isTabActive = document.visibilityState === 'visible';
+      if (isTabActive && isVisible) {
+        startRaf();
+      } else {
+        stopRaf();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    if (!prefersReducedMotion && isVisible && isTabActive) {
+      startRaf();
     } else {
       renderer.render(scene, camera);
     }
@@ -220,35 +271,46 @@ export default function HeroFabricDrape() {
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
       renderer.setSize(width, height);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
     };
 
-    window.addEventListener('resize', handleResize);
+    window.addEventListener('resize', handleResize, { passive: true });
 
-    // Context loss handler
+    // 10. Tratamento de perda e restauração de contexto WebGL
     const handleContextLost = (e: Event) => {
       e.preventDefault();
-      console.warn('[Hero 3D Drape] WebGL Context Lost');
-      setHasWebGL(false);
+      stopRaf();
     };
-    renderer.domElement.addEventListener('webglcontextlost', handleContextLost);
+
+    const canvasEl = renderer.domElement;
+    canvasEl.addEventListener('webglcontextlost', handleContextLost, false);
 
     // Cleanup completo
     return () => {
       isDisposed = true;
-      cancelAnimationFrame(animId);
+      stopRaf();
+      if (mouseTimeout) clearTimeout(mouseTimeout);
+      if (!isTouch) {
+        window.removeEventListener('mousemove', handleMouseMove);
+      }
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('resize', handleResize);
+      canvasEl.removeEventListener('webglcontextlost', handleContextLost);
       observer.disconnect();
       trigger.kill();
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('resize', handleResize);
-      renderer.domElement.removeEventListener('webglcontextlost', handleContextLost);
 
       geometry.dispose();
       material.dispose();
       renderer.dispose();
-      renderer.forceContextLoss();
-      if (container.contains(renderer.domElement)) {
-        container.removeChild(renderer.domElement);
+      try {
+        const gl = renderer.getContext();
+        const loseExt = gl.getExtension('WEBGL_lose_context');
+        loseExt?.loseContext();
+      } catch {
+        // Ignora se já estiver liberado
+      }
+
+      if (container.contains(canvasEl)) {
+        container.removeChild(canvasEl);
       }
     };
   }, []);
@@ -256,10 +318,14 @@ export default function HeroFabricDrape() {
   return (
     <div
       ref={containerRef}
-      className={`absolute inset-0 pointer-events-none z-0 overflow-hidden transition-opacity duration-1000 ${
-        hasWebGL ? 'opacity-100' : 'opacity-0'
-      }`}
+      className="absolute inset-0 w-full h-full pointer-events-none z-0 overflow-hidden"
       aria-hidden="true"
-    />
+    >
+      {!hasWebGL && (
+        <div className="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none">
+          <div className="w-[500px] h-[500px] rounded-full bg-gradient-radial from-atelier-sand/40 to-transparent blur-3xl" />
+        </div>
+      )}
+    </div>
   );
 }
