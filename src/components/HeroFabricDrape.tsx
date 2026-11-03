@@ -73,11 +73,10 @@ export default function HeroFabricDrape() {
     const segY = isMobile ? 18 : 36;
     const geometry = new THREE.PlaneGeometry(5.2, 3.4, segX, segY);
 
-    // Calibração de cores com base na marca ativa
-    const isPrecioza = siteConfig.brand === 'precioza';
-    const colorBase = isPrecioza ? '#E5D8C3' : '#D9C8B3'; // Champanhe dourado suave
-    const colorShadow = isPrecioza ? '#C5B49D' : '#B8A99A'; // Sombra mineral
-    const colorSheen = isPrecioza ? '#FCFAF5' : '#FAF8F5'; // Brilho de seda
+    // Calibração de cores para tema escuro e dourado (Seção 3)
+    const colorBase = '#B19462'; // Dourado principal da Precioza
+    const colorShadow = '#2E2413'; // Sombra mineral quente
+    const colorSheen = '#D6BC8B'; // Brilho de seda dourada suave
 
     const uniforms = {
       uTime: { value: 0 },
@@ -142,11 +141,12 @@ export default function HeroFabricDrape() {
         vec3 tone = mix(uColorShadow, uColorBase, diffuse);
         vec3 finalColor = mix(tone, uColorSheen, fresnel);
 
-        // Desvanecimento suave nas bordas para blend perfeito com o fundo claro
+        // Desvanecimento suave nas bordas para blend atmosférico sobre fundo preto
         float alpha = smoothstep(0.0, 0.15, vUv.x) * smoothstep(1.0, 0.85, vUv.x) *
                       smoothstep(0.0, 0.15, vUv.y) * smoothstep(1.0, 0.85, vUv.y);
 
-        gl_FragColor = vec4(finalColor, alpha * 0.35);
+        // Opacidade baixa (<= 0.28) sobre preto
+        gl_FragColor = vec4(finalColor, alpha * 0.26);
       }
     `;
 
@@ -160,122 +160,123 @@ export default function HeroFabricDrape() {
     });
 
     const mesh = new THREE.Mesh(geometry, material);
-    mesh.position.set(-0.2, 0.1, 0);
-    mesh.rotation.z = -0.05;
+    mesh.position.set(0.6, 0.1, 0);
+    mesh.rotation.z = -0.06;
     scene.add(mesh);
 
-    // 6. Integração com GSAP ScrollTrigger
-    gsap.registerPlugin(ScrollTrigger);
-    const trigger = ScrollTrigger.create({
-      trigger: container,
-      start: 'top top',
-      end: 'bottom top',
-      scrub: 1.5,
-      onUpdate: (self: any) => {
-        uniforms.uScroll.value = self.progress;
-        mesh.rotation.z = -0.05 + self.progress * 0.12;
-      },
-    });
-
-    // 7. Mouse Listener com throttling e desativado em touch
-    let mouseTimeout: number | null = null;
-    const handleMouseMove = (e: MouseEvent) => {
-      if (isTouch) return;
-      if (mouseTimeout) return;
-
-      mouseTimeout = window.setTimeout(() => {
-        mouseTimeout = null;
-      }, 30);
-
-      const rect = container.getBoundingClientRect();
-      const normX = (e.clientX - rect.left) / rect.width;
-      const normY = 1 - (e.clientY - rect.top) / rect.height;
-
-      uniforms.uMouse.value.x = normX;
-      uniforms.uMouse.value.y = normY;
-    };
-
-    if (!isTouch) {
-      window.addEventListener('mousemove', handleMouseMove, { passive: true });
-    }
-
-    // 8. Loop de animação com pausa real do RAF quando invisível ou aba oculta
-    let isVisible = true;
-    let isTabActive = document.visibilityState === 'visible';
+    // 6. Loop de Renderização com controle de RAF inteligente
+    let rafId: number | null = null;
     let isDisposed = false;
-    let animId: number | null = null;
+    let isVisible = true;
+    let targetMouse = new THREE.Vector2(0.5, 0.5);
+    let currentMouse = new THREE.Vector2(0.5, 0.5);
     const clock = new THREE.Clock();
 
-    const startRaf = () => {
-      if (animId !== null || isDisposed || prefersReducedMotion) return;
+    const render = () => {
+      if (isDisposed) return;
 
-      const render = () => {
-        if (isDisposed) return;
-        if (isVisible && isTabActive) {
-          uniforms.uTime.value = clock.getElapsedTime();
-          renderer.render(scene, camera);
-          animId = requestAnimationFrame(render);
-        } else {
-          animId = null;
-        }
-      };
+      if (isVisible && !prefersReducedMotion) {
+        const delta = clock.getDelta();
+        uniforms.uTime.value += Math.min(delta, 0.1) * 0.6;
 
-      animId = requestAnimationFrame(render);
+        // Interpolação suave do mouse (lerp)
+        currentMouse.lerp(targetMouse, 0.04);
+        uniforms.uMouse.value.copy(currentMouse);
+
+        renderer.render(scene, camera);
+      }
+
+      rafId = requestAnimationFrame(render);
     };
 
-    const stopRaf = () => {
-      if (animId !== null) {
-        cancelAnimationFrame(animId);
-        animId = null;
+    const startRaf = () => {
+      if (rafId === null) {
+        clock.start();
+        rafId = requestAnimationFrame(render);
       }
     };
 
+    const stopRaf = () => {
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
+    };
+
+    startRaf();
+
+    // 7. Pausa de renderização quando fora de vista via IntersectionObserver
     const observer = new IntersectionObserver(
       (entries) => {
-        entries.forEach((e) => {
-          isVisible = e.isIntersecting;
-          if (isVisible && isTabActive) {
+        entries.forEach((entry) => {
+          isVisible = entry.isIntersecting;
+          if (isVisible) {
             startRaf();
           } else {
             stopRaf();
           }
         });
       },
-      { threshold: 0.05 }
+      { rootMargin: '100px' }
     );
-
     observer.observe(container);
 
-    const handleVisibilityChange = () => {
-      isTabActive = document.visibilityState === 'visible';
-      if (isTabActive && isVisible) {
-        startRaf();
-      } else {
-        stopRaf();
-      }
+    // 8. Otimização de Mouse Move com Throttling
+    let mouseTimeout: NodeJS.Timeout | null = null;
+    const handleMouseMove = (e: MouseEvent) => {
+      if (mouseTimeout) return;
+      mouseTimeout = setTimeout(() => {
+        mouseTimeout = null;
+      }, 30);
+
+      const x = e.clientX / window.innerWidth;
+      const y = 1.0 - e.clientY / window.innerHeight;
+      targetMouse.set(x, y);
     };
 
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    if (!prefersReducedMotion && isVisible && isTabActive) {
-      startRaf();
-    } else {
-      renderer.render(scene, camera);
+    if (!isTouch && !prefersReducedMotion) {
+      window.addEventListener('mousemove', handleMouseMove, { passive: true });
     }
 
-    // 9. Resize
+    // 9. Conexão ao ScrollTrigger para aceleração e rotação suave
+    gsap.registerPlugin(ScrollTrigger);
+    const trigger = ScrollTrigger.create({
+      trigger: container,
+      start: 'top top',
+      end: 'bottom top',
+      scrub: true,
+      onUpdate: (self: any) => {
+        uniforms.uScroll.value = self.progress;
+      },
+    });
+
+    // 10. Pause no tab blur / retorno de visibilidade da página
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        stopRaf();
+      } else if (isVisible) {
+        startRaf();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // 11. Redimensionamento seguro com debounce
+    let resizeTimer: NodeJS.Timeout | null = null;
     const handleResize = () => {
-      if (isDisposed || !container) return;
-      width = container.clientWidth || window.innerWidth;
-      height = container.clientHeight || window.innerHeight;
-      camera.aspect = width / height;
-      camera.updateProjectionMatrix();
-      renderer.setSize(width, height);
+      if (resizeTimer) clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        if (!containerRef.current || isDisposed) return;
+        const w = containerRef.current.clientWidth || window.innerWidth;
+        const h = containerRef.current.clientHeight || window.innerHeight;
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+        renderer.setSize(w, h);
+      }, 100);
     };
 
-    window.addEventListener('resize', handleResize, { passive: true });
+    window.addEventListener('resize', handleResize);
 
-    // 10. Tratamento de perda e restauração de contexto WebGL
+    // 12. Tratamento do contexto WebGL perdido
     const handleContextLost = (e: Event) => {
       e.preventDefault();
       stopRaf();
@@ -322,8 +323,8 @@ export default function HeroFabricDrape() {
       aria-hidden="true"
     >
       {!hasWebGL && (
-        <div className="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none">
-          <div className="w-[500px] h-[500px] rounded-full bg-gradient-radial from-atelier-sand/40 to-transparent blur-3xl" />
+        <div className="absolute inset-0 flex items-center justify-center opacity-25 pointer-events-none">
+          <div className="w-[500px] h-[500px] rounded-full bg-gradient-radial from-gold/30 to-transparent blur-3xl" />
         </div>
       )}
     </div>

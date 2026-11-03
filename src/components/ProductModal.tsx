@@ -2,37 +2,32 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
+import gsap from 'gsap';
 import { Product, ProductColor, ProductSize } from '@/types';
 import { siteConfig } from '@/config/site';
 import { useLenis } from '@/components/SmoothScroll';
-import { X, MessageCircle, Check, Info, Copy } from 'lucide-react';
+import { X, MessageCircle } from 'lucide-react';
 
 interface ProductModalProps {
   product: Product | null;
   onClose: () => void;
 }
 
-/**
- * Componente interno que renderiza os detalhes e controles do modal.
- * Montado com key={product.id} para garantir que todo o estado (cor, tamanho, avisos)
- * seja reinicializado de forma atômica e limpa ao trocar de produto.
- */
 function ProductModalDialog({ product, onClose }: { product: Product; onClose: () => void }) {
   const { stop: stopLenis, start: startLenis } = useLenis();
+  const backdropRef = useRef<HTMLDivElement>(null);
   const modalContainerRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const previousActiveElementRef = useRef<HTMLElement | null>(null);
 
   const [selectedColor, setSelectedColor] = useState<ProductColor>(
-    product.colors[0] || { name: 'Padrão', hex: '#D9C8B3' }
+    product.colors[0] || { name: 'Padrão', hex: '#B19462' }
   );
   const [selectedSize, setSelectedSize] = useState<ProductSize>(
-    product.availableSizes[0] || 'M'
+    product.availableSizes[0] || 'U'
   );
-  const [copiedNotice, setCopiedNotice] = useState(false);
-  const [demoNoticeVisible, setDemoNoticeVisible] = useState(false);
 
-  // Mensagem contextual gerada
+  // Mensagem contextual gerada para o WhatsApp da loja
   const contextualMessage = siteConfig.whatsapp.generateProductMessage(
     product.name,
     selectedColor.name,
@@ -40,24 +35,53 @@ function ProductModalDialog({ product, onClose }: { product: Product; onClose: (
     product.id
   );
 
-  // 1. Bloqueio de scroll do body e pausa do Lenis + gestão de foco e tecla ESC
+  // Animação de entrada e saída com GSAP (Seção 5.3 item 7)
+  const handleClose = () => {
+    if (modalContainerRef.current && backdropRef.current) {
+      gsap.to(modalContainerRef.current, {
+        y: 20,
+        opacity: 0,
+        scale: 0.98,
+        duration: 0.25,
+        ease: 'power2.in',
+      });
+      gsap.to(backdropRef.current, {
+        opacity: 0,
+        duration: 0.25,
+        ease: 'power2.in',
+        onComplete: onClose,
+      });
+    } else {
+      onClose();
+    }
+  };
+
   useEffect(() => {
     previousActiveElementRef.current = document.activeElement as HTMLElement;
     stopLenis();
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
 
-    // Foco no botão de fechar
+    // Animação de entrada suave com GSAP
+    if (backdropRef.current && modalContainerRef.current) {
+      gsap.fromTo(backdropRef.current, { opacity: 0 }, { opacity: 1, duration: 0.35, ease: 'power2.out' });
+      gsap.fromTo(
+        modalContainerRef.current,
+        { y: 30, opacity: 0, scale: 0.97 },
+        { y: 0, opacity: 1, scale: 1, duration: 0.45, ease: 'power3.out' }
+      );
+    }
+
     closeButtonRef.current?.focus();
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.preventDefault();
-        onClose();
+        handleClose();
         return;
       }
 
-      // Trap de foco simples no modal
+      // Trap de foco
       if (e.key === 'Tab' && modalContainerRef.current) {
         const focusables = modalContainerRef.current.querySelectorAll<HTMLElement>(
           'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
@@ -84,148 +108,102 @@ function ProductModalDialog({ product, onClose }: { product: Product; onClose: (
       startLenis();
       previousActiveElementRef.current?.focus();
     };
-  }, [onClose, stopLenis, startLenis]);
+  }, [stopLenis, startLenis]);
 
-  // 2. Ação de cópia segura para a área de transferência
-  const copyMessageToClipboard = async () => {
-    try {
-      if (navigator.clipboard && window.isSecureContext) {
-        await navigator.clipboard.writeText(contextualMessage);
-      } else {
-        const textArea = document.createElement('textarea');
-        textArea.value = contextualMessage;
-        textArea.style.position = 'fixed';
-        textArea.style.left = '-9999px';
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textArea);
-      }
-      setCopiedNotice(true);
-      setTimeout(() => setCopiedNotice(false), 3500);
-      return true;
-    } catch (err) {
-      console.warn('Falha ao copiar para área de transferência:', err);
-      return false;
-    }
-  };
-
-  // 3. Ação do botão WhatsApp (Regra 5: Modo Demonstração Seguro)
-  const handleConsultation = async () => {
-    await copyMessageToClipboard();
-
-    const isLive = process.env.NEXT_PUBLIC_WHATSAPP_LIVE === 'true';
-    const hasLivePhone =
-      siteConfig.whatsapp.phoneNumber &&
-      siteConfig.whatsapp.phoneNumber !== '5511999999999';
-
-    if (isLive && hasLivePhone) {
-      const encoded = encodeURIComponent(contextualMessage);
-      const url = `https://wa.me/${siteConfig.whatsapp.phoneNumber}?text=${encoded}`;
-      window.open(url, '_blank', 'noopener,noreferrer');
-    } else {
-      // Sempre no modo demonstração seguro: exibe o aviso e copia
-      setDemoNoticeVisible(true);
-    }
+  // Ação WhatsApp Real (Regra 3: isDemo: false, abre wa.me diretamente)
+  const handleWhatsAppConsultation = () => {
+    const url = siteConfig.whatsapp.getWhatsAppUrl(contextualMessage);
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-atelier-dark/80 backdrop-blur-md overflow-y-auto"
+      ref={backdropRef}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-bg-base/85 backdrop-blur-md overflow-y-auto"
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-product-title"
       onClick={(e) => {
-        // Fechar ao clicar no backdrop (fora do container)
         if (e.target === e.currentTarget) {
-          onClose();
+          handleClose();
         }
       }}
     >
       <div
         ref={modalContainerRef}
         data-lenis-prevent
-        className="relative w-full max-w-4xl bg-atelier-bg rounded-2xl shadow-2xl border border-atelier-border overflow-hidden my-8"
+        className="relative w-full max-w-4xl bg-bg-soft rounded-2xl shadow-2xl border border-line overflow-hidden my-8"
       >
         {/* Close Button */}
         <button
           ref={closeButtonRef}
-          onClick={onClose}
-          className="absolute top-4 right-4 z-20 p-2.5 rounded-full bg-atelier-bg/90 text-atelier-noir hover:bg-atelier-sand/30 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-atelier-noir"
-          aria-label="Fechar janela de detalhes do produto"
+          onClick={handleClose}
+          className="absolute top-4 right-4 z-20 p-2.5 rounded-full bg-bg-base/80 text-ivory hover:text-gold hover:bg-bg-raised transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-gold"
+          aria-label="Fechar detalhes da peça"
         >
           <X className="w-5 h-5" />
         </button>
 
         <div className="grid grid-cols-1 md:grid-cols-12 max-h-[85vh] overflow-y-auto">
           {/* Left: Product Image */}
-          <div className="md:col-span-5 relative min-h-[340px] md:min-h-full bg-atelier-sand/20">
+          <div className="md:col-span-5 relative min-h-[340px] md:min-h-full bg-bg-base">
             <Image
               src={product.image}
               alt={product.name}
               fill
               sizes="(max-width: 768px) 100vw, 42vw"
-              className="object-cover object-center filter saturate-[0.96]"
-              style={{ objectPosition: product.objectPosition || 'center' }}
+              className="object-cover object-center filter contrast-[1.03] saturate-[0.96]"
+              style={{ objectPosition: product.objectPosition || 'center 20%' }}
             />
-            <div className="absolute top-4 left-4 bg-atelier-noir/80 backdrop-blur-sm text-atelier-bg text-[10px] uppercase tracking-widest px-3 py-1 rounded">
+            <div className="absolute top-4 left-4 bg-bg-base/80 backdrop-blur-sm text-gold-light text-[10px] uppercase tracking-widest px-3 py-1 rounded border border-line">
               {product.categoryLabel}
             </div>
-
-            {product.needsOriginal && (
-              <div className="absolute bottom-4 left-4 right-4 bg-atelier-noir/70 backdrop-blur-sm text-atelier-bg/90 text-[10px] px-3 py-1.5 rounded text-center">
-                Visualização demonstrativa · Slot para arquivo em alta resolução
-              </div>
-            )}
           </div>
 
-          {/* Right: Specifications & Demonstration Action */}
+          {/* Right: Specifications & Direct WhatsApp Action */}
           <div className="md:col-span-7 p-6 sm:p-8 flex flex-col justify-between space-y-6">
             <div>
               {/* Product Header */}
-              <div className="flex items-baseline justify-between border-b border-atelier-border/60 pb-4 mb-4 gap-4">
+              <div className="flex items-baseline justify-between border-b border-line pb-4 mb-4 gap-4">
                 <div>
-                  <span className="text-[10px] uppercase tracking-ultra text-atelier-stone font-sans block mb-1">
-                    Código: {product.id}
+                  <span className="text-[10px] uppercase tracking-ultra text-gold-deep font-sans block mb-1">
+                    Referência: {product.id}
                   </span>
-                  <h3 id="modal-product-title" className="font-serif text-2xl sm:text-3xl text-atelier-noir">
+                  <h3 id="modal-product-title" className="font-serif text-2xl sm:text-3xl text-ivory">
                     {product.name}
                   </h3>
                 </div>
                 <div className="text-right">
-                  <span className="font-sans text-xl font-medium text-atelier-noir block">
+                  <span className="font-sans text-xl font-medium text-gold block">
                     {product.formattedPrice}
                   </span>
-                  {product.formattedPrice.includes('confirmar') && (
-                    <span className="text-[10px] text-atelier-stone uppercase tracking-wider block">
-                      Sob consulta
-                    </span>
-                  )}
+                  <span className="text-[10px] text-stone uppercase tracking-wider block">
+                    Preço sob consulta
+                  </span>
                 </div>
               </div>
 
-              <p className="text-xs sm:text-sm text-atelier-stone leading-relaxed mb-6">
+              <p className="text-xs sm:text-sm text-stone leading-relaxed mb-6 font-light">
                 {product.description}
               </p>
 
               {/* Composition & Gauge Badge */}
-              <div className="p-3.5 bg-atelier-ecru rounded-xl border border-atelier-border/60 space-y-1 mb-6 text-xs text-atelier-noir/85 font-sans">
+              <div className="p-3.5 bg-bg-base rounded-xl border border-line space-y-1 mb-6 text-xs text-stone font-sans">
                 <div>
-                  <strong className="text-atelier-noir font-medium">Composição:</strong> {product.composition}
+                  <strong className="text-ivory font-medium">Composição:</strong> {product.composition}
                 </div>
                 <div>
-                  <strong className="text-atelier-noir font-medium">Acabamento / Trama:</strong> {product.gauge}
+                  <strong className="text-ivory font-medium">Acabamento / Trama:</strong> {product.gauge}
                 </div>
               </div>
 
               {/* Color Selector */}
               <div className="mb-6">
                 <div className="flex items-center justify-between mb-2.5">
-                  <span className="text-xs font-sans uppercase tracking-widest text-atelier-stone">
+                  <span className="text-xs font-sans uppercase tracking-widest text-stone">
                     Tonalidade Selecionada:
                   </span>
-                  <span className="text-xs font-sans font-medium text-atelier-noir">
+                  <span className="text-xs font-sans font-medium text-gold-light">
                     {selectedColor.name}
                   </span>
                 </div>
@@ -238,14 +216,14 @@ function ProductModalDialog({ product, onClose }: { product: Product; onClose: (
                         onClick={() => setSelectedColor(color)}
                         className={`group relative p-1 rounded-full border transition-all ${
                           isSelected
-                            ? 'border-atelier-noir scale-110 shadow-sm'
-                            : 'border-transparent hover:border-atelier-border'
+                            ? 'border-gold scale-110 shadow-sm'
+                            : 'border-line hover:border-gold/40'
                         }`}
                         title={color.name}
                         aria-label={`Selecionar cor ${color.name}`}
                       >
                         <span
-                          className="block w-6 h-6 rounded-full border border-black/10"
+                          className="block w-6 h-6 rounded-full border border-black/30"
                           style={{ backgroundColor: color.hex }}
                         />
                       </button>
@@ -257,10 +235,10 @@ function ProductModalDialog({ product, onClose }: { product: Product; onClose: (
               {/* Size Selector */}
               <div className="mb-6">
                 <div className="flex items-center justify-between mb-2.5">
-                  <span className="text-xs font-sans uppercase tracking-widest text-atelier-stone">
+                  <span className="text-xs font-sans uppercase tracking-widest text-stone">
                     Tamanho Disponível:
                   </span>
-                  <span className="text-xs font-sans text-atelier-stone">
+                  <span className="text-xs font-sans text-stone">
                     {selectedSize === 'U' ? 'Tamanho Único' : `Tamanho ${selectedSize}`}
                   </span>
                 </div>
@@ -273,8 +251,8 @@ function ProductModalDialog({ product, onClose }: { product: Product; onClose: (
                         onClick={() => setSelectedSize(size)}
                         className={`px-3.5 py-1.5 rounded-lg text-xs font-sans transition-all ${
                           isSelected
-                            ? 'bg-atelier-noir text-atelier-bg font-medium shadow-sm'
-                            : 'bg-atelier-ecru text-atelier-noir hover:bg-atelier-sand/30 border border-atelier-border/80'
+                            ? 'bg-gold text-bg-base font-semibold shadow-md'
+                            : 'bg-bg-base text-stone hover:text-ivory border border-line'
                         }`}
                       >
                         {size === 'U' ? 'Único (U)' : size}
@@ -285,42 +263,19 @@ function ProductModalDialog({ product, onClose }: { product: Product; onClose: (
               </div>
             </div>
 
-            {/* Bottom Actions & WhatsApp Demonstration Notice */}
-            <div className="space-y-3 pt-4 border-t border-atelier-border/60">
-              {/* Contextual message preview box */}
-              <div className="p-3 bg-atelier-ecru/80 rounded-xl border border-atelier-border/60 text-[11px] font-sans text-atelier-stone space-y-1">
-                <div className="flex items-center justify-between text-atelier-noir font-medium">
-                  <span>Mensagem contextual gerada:</span>
-                  <button
-                    onClick={copyMessageToClipboard}
-                    className="inline-flex items-center space-x-1 text-atelier-stone hover:text-atelier-noir transition-colors"
-                    title="Copiar mensagem"
-                  >
-                    <Copy className="w-3 h-3" />
-                    <span>{copiedNotice ? 'Copiado!' : 'Copiar'}</span>
-                  </button>
-                </div>
-                <p className="italic text-atelier-noir/80 line-clamp-2">
-                  &ldquo;{contextualMessage}&rdquo;
-                </p>
-              </div>
-
-              {/* Main Demonstration Action Button */}
+            {/* Bottom Actions: WhatsApp Real Direct Action */}
+            <div className="space-y-3 pt-4 border-t border-line">
               <button
-                onClick={handleConsultation}
-                className="w-full flex items-center justify-center space-x-2 py-3.5 px-6 rounded-xl bg-atelier-noir text-atelier-bg hover:bg-atelier-stone font-sans text-xs uppercase tracking-widest transition-all duration-200 shadow-md group"
+                onClick={handleWhatsAppConsultation}
+                className="w-full flex items-center justify-center space-x-2 py-4 px-6 bg-gold text-bg-base font-semibold hover:bg-gold-light font-sans text-xs uppercase tracking-widest transition-all duration-200 shadow-xl group"
               >
-                <MessageCircle className="w-4 h-4 text-emerald-400" />
-                <span>Consultar Peça via WhatsApp</span>
+                <MessageCircle className="w-4 h-4 text-bg-base fill-bg-base" />
+                <span>Consultar Disponibilidade no WhatsApp</span>
               </button>
 
-              {/* Demonstration Alert Banner */}
-              <div className="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-900/80 dark:text-amber-200/80 flex items-start space-x-2">
-                <Info className="w-4 h-4 flex-shrink-0 text-amber-600 mt-0.5" />
-                <span>
-                  <strong>Ambiente de Demonstração OpenPage:</strong> Ao clicar, o texto da consulta é copiado para sua área de transferência. Nenhuma mensagem é disparada à loja.
-                </span>
-              </div>
+              <p className="text-[11px] text-stone text-center font-sans">
+                Atendimento direto com a consultoria da Precioza Tricot · Monte Sião - MG
+              </p>
             </div>
           </div>
         </div>
@@ -329,10 +284,6 @@ function ProductModalDialog({ product, onClose }: { product: Product; onClose: (
   );
 }
 
-/**
- * Wrapper de controle: só monta o componente interno quando há um produto selecionado,
- * garantindo conformidade rigorosa com as Regras de Hooks do React e reset automático de estado.
- */
 export default function ProductModal({ product, onClose }: ProductModalProps) {
   if (!product) return null;
   return <ProductModalDialog product={product} onClose={onClose} key={product.id} />;

@@ -79,9 +79,44 @@ declare module 'gsap/ScrollTrigger' {
     static killAll(): void;
     static matchMedia(vars: any): any;
     static batch(targets: any, vars: any): any;
+    static config(vars: any): void;
     progress: number;
     direction: number;
     kill(reset?: boolean): void;
+  }
+}
+
+declare module 'gsap/Flip' {
+  export class Flip {
+    static register(core: any): void;
+    static getState(targets: any, vars?: any): any;
+    static from(state: any, vars?: any): any;
+    static to(state: any, vars?: any): any;
+    static fit(from: any, to: any, vars?: any): any;
+    static isFlipping(target: any): boolean;
+    static killFlipsOf(targets: any, complete?: boolean): void;
+  }
+}
+
+declare module 'gsap/SplitText' {
+  export class SplitText {
+    constructor(target: any, vars?: any);
+    lines: HTMLElement[];
+    words: HTMLElement[];
+    chars: HTMLElement[];
+    revert(): void;
+    split(vars?: any): any;
+  }
+}
+
+declare module 'gsap/ScrollToPlugin' {
+  export const ScrollToPlugin: any;
+}
+
+declare module 'gsap/Observer' {
+  export class Observer {
+    static register(core: any): void;
+    static create(vars: any): any;
   }
 }
 

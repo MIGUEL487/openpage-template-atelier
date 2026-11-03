@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 import * as THREE from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { isWebGLAvailable } from '@/utils/webgl';
@@ -15,11 +15,14 @@ interface FabricSceneProps {
 export default function FabricScene({ modelUrl }: FabricSceneProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const sectionRef = useRef<HTMLElement>(null);
+  const photo1Ref = useRef<HTMLDivElement>(null);
+  const photo2Ref = useRef<HTMLDivElement>(null);
+  const photo3Ref = useRef<HTMLDivElement>(null);
+  const photo4Ref = useRef<HTMLDivElement>(null);
   const [hasWebGL, setHasWebGL] = useState(true);
   const [isInViewport, setIsInViewport] = useState(false);
 
   // 1. Lazy loading & descarte do contexto WebGL com IntersectionObserver
-  // Garante que apenas um contexto WebGL fique ativo por vez no navegador
   useEffect(() => {
     const section = sectionRef.current;
     if (!section) return;
@@ -37,7 +40,71 @@ export default function FabricScene({ modelUrl }: FabricSceneProps) {
     return () => observer.disconnect();
   }, []);
 
-  // 2. Inicialização e destruição do WebGL vinculada estritamente à visibilidade da seção
+  // 2. Parallax em camadas das fotos reais de arara e crochê (Seção 5.3 item 5)
+  useEffect(() => {
+    gsap.registerPlugin(ScrollTrigger);
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) return;
+
+    const ctx = gsap.context(() => {
+      if (photo1Ref.current) {
+        gsap.to(photo1Ref.current, {
+          yPercent: -10,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: 'top bottom',
+            end: 'bottom top',
+            scrub: 1.2,
+          },
+        });
+      }
+
+      if (photo2Ref.current) {
+        gsap.to(photo2Ref.current, {
+          yPercent: 12,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: 'top bottom',
+            end: 'bottom top',
+            scrub: 1.5,
+          },
+        });
+      }
+
+      if (photo3Ref.current) {
+        gsap.to(photo3Ref.current, {
+          yPercent: -8,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: 'top bottom',
+            end: 'bottom top',
+            scrub: 1.3,
+          },
+        });
+      }
+
+      if (photo4Ref.current) {
+        gsap.to(photo4Ref.current, {
+          yPercent: 14,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: 'top bottom',
+            end: 'bottom top',
+            scrub: 1.6,
+          },
+        });
+      }
+    }, sectionRef);
+
+    return () => ctx.revert();
+  }, []);
+
+  // 3. Inicialização e destruição do WebGL vinculada estritamente à visibilidade da seção
   useEffect(() => {
     if (!isInViewport) return;
     if (!isWebGLAvailable()) {
@@ -69,7 +136,7 @@ export default function FabricScene({ modelUrl }: FabricSceneProps) {
         powerPreference: 'low-power',
       });
     } catch (e) {
-      console.warn('[FabricScene] Erro ao instanciar WebGLRenderer:', e);
+      console.warn('[FabricScene] Erro ao instanciar WebGL:', e);
       setHasWebGL(false);
       return;
     }
@@ -81,7 +148,7 @@ export default function FabricScene({ modelUrl }: FabricSceneProps) {
     renderer.setSize(width, height);
     renderer.setPixelRatio(dpr);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.05;
+    renderer.toneMappingExposure = 1.0;
 
     renderer.domElement.style.width = '100%';
     renderer.domElement.style.height = '100%';
@@ -91,30 +158,12 @@ export default function FabricScene({ modelUrl }: FabricSceneProps) {
     container.innerHTML = '';
     container.appendChild(renderer.domElement);
 
-    const sceneGroup = new THREE.Group();
-    scene.add(sceneGroup);
+    // Geometria têxtil procedural
+    const geometry = new THREE.PlaneGeometry(5.0, 3.2, isMobile ? 24 : 44, isMobile ? 18 : 34);
 
-    // Iluminação cênica suave de ateliê
-    const ambientLight = new THREE.AmbientLight(0xfdfbf7, 0.85);
-    scene.add(ambientLight);
-
-    const keyLight = new THREE.DirectionalLight(0xfff8ee, 1.6);
-    keyLight.position.set(3.5, 4.0, 3.0);
-    scene.add(keyLight);
-
-    const fillLight = new THREE.DirectionalLight(0xe8e2d8, 0.8);
-    fillLight.position.set(-3.0, -1.0, 2.0);
-    scene.add(fillLight);
-
-    let geometry: THREE.BufferGeometry | null = null;
-    let material: THREE.Material | null = null;
-    let isDisposed = false;
-
-    // Calibração de cores com base na marca
-    const isPrecioza = siteConfig.brand === 'precioza';
-    const colorBase = isPrecioza ? '#E2D5BF' : '#D9C8B3';
-    const colorShadow = isPrecioza ? '#BFA98F' : '#AC9C8B';
-    const colorSheen = isPrecioza ? '#FCFAF5' : '#FAF8F5';
+    const colorBase = '#B19462';
+    const colorShadow = '#231B0E';
+    const colorSheen = '#D6BC8B';
 
     const uniforms = {
       uTime: { value: 0 },
@@ -124,180 +173,108 @@ export default function FabricScene({ modelUrl }: FabricSceneProps) {
       uColorSheen: { value: new THREE.Color(colorSheen) },
     };
 
-    if (modelUrl) {
-      const loader = new GLTFLoader();
-      loader.load(
-        modelUrl,
-        (gltf: any) => {
-          if (isDisposed) return;
-          const model = gltf.scene;
-          model.scale.set(1.5, 1.5, 1.5);
-          sceneGroup.add(model);
-        },
-        undefined,
-        () => {
-          initProceduralDrape();
-        }
-      );
-    } else {
-      initProceduralDrape();
-    }
+    const vertexShader = `
+      uniform float uTime;
+      uniform float uScroll;
+      varying vec2 vUv;
+      varying vec3 vNormal;
+      varying vec3 vPosition;
 
-    function initProceduralDrape() {
-      const segX = isMobile ? 28 : 56;
-      const segY = isMobile ? 22 : 44;
-      geometry = new THREE.PlaneGeometry(5.4, 3.6, segX, segY);
+      void main() {
+        vUv = uv;
+        vec3 pos = position;
 
-      const vertexShader = `
-        uniform float uTime;
-        uniform float uScroll;
-        varying vec2 vUv;
-        varying vec3 vNormal;
-        varying vec3 vPosition;
+        float w1 = sin(pos.x * 2.0 + uTime * 0.4) * cos(pos.y * 1.6 + uTime * 0.3) * 0.14;
+        float w2 = cos(pos.x * 3.5 - uTime * 0.2) * sin(pos.y * 2.2 + uTime * 0.25) * 0.05;
+        float scrollWave = sin(pos.y * 2.0 + uScroll * 3.0) * 0.10;
 
-        void main() {
-          vUv = uv;
-          vec3 pos = position;
+        pos.z += w1 + w2 + scrollWave;
 
-          float wave1 = sin(pos.x * 1.5 + uTime * 0.4) * cos(pos.y * 1.2 + uTime * 0.3) * 0.22;
-          float wave2 = cos(pos.x * 2.8 - uTime * 0.2) * sin(pos.y * 2.2 + uTime * 0.25) * 0.08;
-          float scrollTwist = sin(pos.y * 1.5 + uScroll * 3.0) * 0.16;
+        vPosition = (modelMatrix * vec4(pos, 1.0)).xyz;
+        vNormal = normalize(normalMatrix * normal);
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+      }
+    `;
 
-          pos.z += wave1 + wave2 + scrollTwist;
+    const fragmentShader = `
+      uniform vec3 uColorBase;
+      uniform vec3 uColorShadow;
+      uniform vec3 uColorSheen;
+      varying vec2 vUv;
+      varying vec3 vNormal;
+      varying vec3 vPosition;
 
-          vPosition = (modelMatrix * vec4(pos, 1.0)).xyz;
-          vNormal = normalize(normalMatrix * normal);
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
-        }
-      `;
+      void main() {
+        vec3 normal = normalize(vNormal);
+        vec3 lightDir = normalize(vec3(1.0, 2.0, 2.5));
+        vec3 viewDir = normalize(-vPosition);
 
-      const fragmentShader = `
-        uniform vec3 uColorBase;
-        uniform vec3 uColorShadow;
-        uniform vec3 uColorSheen;
-        varying vec2 vUv;
-        varying vec3 vNormal;
-        varying vec3 vPosition;
+        float NdotL = dot(normal, lightDir);
+        float diffuse = clamp(NdotL * 0.5 + 0.5, 0.0, 1.0);
+        float fresnel = pow(1.0 - max(dot(normal, viewDir), 0.0), 3.0) * 0.35;
 
-        void main() {
-          vec3 normal = normalize(vNormal);
-          vec3 lightDir = normalize(vec3(2.0, 3.0, 3.5));
-          vec3 viewDir = normalize(-vPosition);
+        vec3 tone = mix(uColorShadow, uColorBase, diffuse);
+        vec3 finalColor = mix(tone, uColorSheen, fresnel);
 
-          float NdotL = dot(normal, lightDir);
-          float diffuse = clamp(NdotL * 0.5 + 0.5, 0.0, 1.0);
-          float fresnel = pow(1.0 - max(dot(normal, viewDir), 0.0), 3.0) * 0.35;
+        float alpha = smoothstep(0.0, 0.2, vUv.x) * smoothstep(1.0, 0.8, vUv.x) *
+                      smoothstep(0.0, 0.2, vUv.y) * smoothstep(1.0, 0.8, vUv.y);
 
-          vec3 tone = mix(uColorShadow, uColorBase, diffuse);
-          vec3 finalColor = mix(tone, uColorSheen, fresnel);
+        gl_FragColor = vec4(finalColor, alpha * 0.22);
+      }
+    `;
 
-          float alpha = smoothstep(0.0, 0.12, vUv.x) * smoothstep(1.0, 0.88, vUv.x) *
-                        smoothstep(0.0, 0.12, vUv.y) * smoothstep(1.0, 0.88, vUv.y);
+    const material = new THREE.ShaderMaterial({
+      vertexShader,
+      fragmentShader,
+      uniforms,
+      transparent: true,
+      side: THREE.DoubleSide,
+      depthWrite: false,
+    });
 
-          gl_FragColor = vec4(finalColor, alpha * 0.32);
-        }
-      `;
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(-0.2, 0, 0);
+    scene.add(mesh);
 
-      material = new THREE.ShaderMaterial({
-        vertexShader,
-        fragmentShader,
-        uniforms,
-        transparent: true,
-        side: THREE.DoubleSide,
-        depthWrite: false,
-      });
+    let rafId: number | null = null;
+    let isDisposed = false;
+    const clock = new THREE.Clock();
 
-      const mesh = new THREE.Mesh(geometry, material);
-      mesh.position.set(0, 0, 0);
-      sceneGroup.add(mesh);
-    }
+    const render = () => {
+      if (isDisposed) return;
+      if (!prefersReducedMotion) {
+        const delta = clock.getDelta();
+        uniforms.uTime.value += Math.min(delta, 0.1) * 0.5;
+        renderer.render(scene, camera);
+      }
+      rafId = requestAnimationFrame(render);
+    };
 
-    gsap.registerPlugin(ScrollTrigger);
+    rafId = requestAnimationFrame(render);
+
     const trigger = ScrollTrigger.create({
-      trigger: container,
+      trigger: sectionRef.current,
       start: 'top bottom',
       end: 'bottom top',
-      scrub: 1.2,
+      scrub: true,
       onUpdate: (self: any) => {
         uniforms.uScroll.value = self.progress;
-        sceneGroup.rotation.y = (self.progress - 0.5) * 0.25;
       },
     });
 
-    let animId: number | null = null;
-    let isTabActive = document.visibilityState === 'visible';
-    const clock = new THREE.Clock();
-
-    const startRaf = () => {
-      if (animId !== null || isDisposed || prefersReducedMotion) return;
-
-      const render = () => {
-        if (isDisposed) return;
-        if (isTabActive) {
-          uniforms.uTime.value = clock.getElapsedTime();
-          renderer.render(scene, camera);
-          animId = requestAnimationFrame(render);
-        } else {
-          animId = null;
-        }
-      };
-
-      animId = requestAnimationFrame(render);
-    };
-
-    const stopRaf = () => {
-      if (animId !== null) {
-        cancelAnimationFrame(animId);
-        animId = null;
-      }
-    };
-
-    const handleVisibilityChange = () => {
-      isTabActive = document.visibilityState === 'visible';
-      if (isTabActive) {
-        startRaf();
-      } else {
-        stopRaf();
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    if (!prefersReducedMotion && isTabActive) {
-      startRaf();
-    } else {
-      renderer.render(scene, camera);
-    }
-
-    const handleResize = () => {
-      if (isDisposed || !container) return;
-      width = container.clientWidth || window.innerWidth;
-      height = container.clientHeight || 550;
-      camera.aspect = width / height;
-      camera.updateProjectionMatrix();
-      renderer.setSize(width, height);
-    };
-
-    window.addEventListener('resize', handleResize, { passive: true });
-
     return () => {
       isDisposed = true;
-      stopRaf();
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('resize', handleResize);
+      if (rafId !== null) cancelAnimationFrame(rafId);
       trigger.kill();
 
-      geometry?.dispose();
-      material?.dispose();
+      geometry.dispose();
+      material.dispose();
       renderer.dispose();
-
       try {
         const gl = renderer.getContext();
         const loseExt = gl.getExtension('WEBGL_lose_context');
         loseExt?.loseContext();
-      } catch {
-        // Ignora se já liberado
-      }
+      } catch {}
 
       if (container.contains(renderer.domElement)) {
         container.removeChild(renderer.domElement);
@@ -306,12 +283,18 @@ export default function FabricScene({ modelUrl }: FabricSceneProps) {
   }, [isInViewport, modelUrl]);
 
   const fabricData = siteConfig.brandContent.fabricData;
+  const textures = fabricData.textureImages || [
+    { src: '/brands/precioza/processed/precioza-trico-cores-arara.webp', alt: 'Cores de tricô' },
+    { src: '/brands/precioza/processed/precioza-trico-pecas-arara.webp', alt: 'Peças em destaque' },
+    { src: '/brands/precioza/processed/precioza-croche-detalhe.webp', alt: 'Crochê vazado' },
+    { src: '/brands/precioza/processed/precioza-croche-detalhe-2.webp', alt: 'Detalhe do ponto' },
+  ];
 
   return (
     <section
-      id="tecido-3d"
+      id="textura"
       ref={sectionRef}
-      className="relative w-full py-20 lg:py-28 px-6 lg:px-12 bg-atelier-ecru border-b border-atelier-border/50 overflow-hidden"
+      className="relative w-full py-20 lg:py-28 px-6 lg:px-12 bg-bg-raised border-b border-line overflow-hidden"
     >
       {/* 3D Atmospheric Canvas Layer */}
       <div
@@ -320,8 +303,8 @@ export default function FabricScene({ modelUrl }: FabricSceneProps) {
         aria-hidden="true"
       >
         {!hasWebGL && (
-          <div className="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none">
-            <div className="w-[500px] h-[500px] rounded-full bg-gradient-radial from-atelier-sand/50 to-transparent blur-3xl" />
+          <div className="absolute inset-0 flex items-center justify-center opacity-25 pointer-events-none">
+            <div className="w-[500px] h-[500px] rounded-full bg-gradient-radial from-gold/25 to-transparent blur-3xl" />
           </div>
         )}
       </div>
@@ -329,29 +312,90 @@ export default function FabricScene({ modelUrl }: FabricSceneProps) {
       <div className="relative z-10 max-w-7xl mx-auto">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <span className="text-xs uppercase tracking-ultra text-atelier-stone font-sans mb-3 block">
-            {fabricData.kicker}
-          </span>
-          <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-normal text-atelier-noir tracking-tight">
+          <div className="flex items-center justify-center space-x-3 text-xs uppercase tracking-ultra text-gold font-sans font-medium mb-3">
+            <span className="w-6 h-[1px] bg-gold" />
+            <span>{fabricData.kicker}</span>
+            <span className="w-6 h-[1px] bg-gold" />
+          </div>
+          <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-normal text-ivory tracking-tight">
             {fabricData.title}
           </h2>
-          <p className="font-sans text-sm sm:text-base text-atelier-stone mt-4 leading-relaxed font-light">
+          <p className="font-sans text-sm sm:text-base text-stone mt-4 leading-relaxed font-light">
             {fabricData.description}
           </p>
         </div>
 
-        {/* Double-Bezel Spec Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Colagem Fotográfica de Texturas com Parallax em Camadas (Seção 4 & 5.3) */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mb-16">
+          <div
+            ref={photo1Ref}
+            className="relative aspect-[3/4] rounded-xl overflow-hidden border border-line bg-bg-base shadow-xl will-change-transform"
+          >
+            <Image
+              src={textures[0].src}
+              alt={textures[0].alt}
+              fill
+              sizes="(max-width: 768px) 50vw, 25vw"
+              className="object-cover object-center filter contrast-[1.03] saturate-[0.96]"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-bg-base/80 via-transparent to-transparent pointer-events-none" />
+          </div>
+
+          <div
+            ref={photo2Ref}
+            className="relative aspect-[3/4] rounded-xl overflow-hidden border border-line bg-bg-base shadow-xl md:mt-8 will-change-transform"
+          >
+            <Image
+              src={textures[1].src}
+              alt={textures[1].alt}
+              fill
+              sizes="(max-width: 768px) 50vw, 25vw"
+              className="object-cover object-center filter contrast-[1.03] saturate-[0.96]"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-bg-base/80 via-transparent to-transparent pointer-events-none" />
+          </div>
+
+          <div
+            ref={photo3Ref}
+            className="relative aspect-[3/4] rounded-xl overflow-hidden border border-line bg-bg-base shadow-xl will-change-transform"
+          >
+            <Image
+              src={textures[2].src}
+              alt={textures[2].alt}
+              fill
+              sizes="(max-width: 768px) 50vw, 25vw"
+              className="object-cover object-center filter contrast-[1.03] saturate-[0.96]"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-bg-base/80 via-transparent to-transparent pointer-events-none" />
+          </div>
+
+          <div
+            ref={photo4Ref}
+            className="relative aspect-[3/4] rounded-xl overflow-hidden border border-line bg-bg-base shadow-xl md:mt-8 will-change-transform"
+          >
+            <Image
+              src={textures[3].src}
+              alt={textures[3].alt}
+              fill
+              sizes="(max-width: 768px) 50vw, 25vw"
+              className="object-cover object-center filter contrast-[1.03] saturate-[0.96]"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-bg-base/80 via-transparent to-transparent pointer-events-none" />
+          </div>
+        </div>
+
+        {/* Spec Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {fabricData.cards.map((card, idx) => (
             <div
               key={idx}
-              className="p-6 rounded-2xl bg-atelier-bg/85 backdrop-blur-md border border-atelier-border/80 shadow-sm hover:border-atelier-stone transition-all duration-300 space-y-3"
+              className="p-6 rounded-xl bg-bg-soft border border-line shadow-sm hover:border-gold/50 transition-all duration-300 space-y-3"
             >
-              <div className="w-9 h-9 rounded-xl bg-atelier-ecru flex items-center justify-center text-atelier-noir text-xs font-serif border border-atelier-border/60">
+              <div className="w-8 h-8 rounded bg-bg-base flex items-center justify-center text-gold-light text-xs font-serif border border-line">
                 0{idx + 1}
               </div>
-              <h3 className="font-serif text-lg text-atelier-noir">{card.title}</h3>
-              <p className="font-sans text-xs text-atelier-stone leading-relaxed">
+              <h3 className="font-serif text-lg text-ivory">{card.title}</h3>
+              <p className="font-sans text-xs text-stone leading-relaxed font-light">
                 {card.description}
               </p>
             </div>
