@@ -1,0 +1,10 @@
+Precioza Tricot — imagens recortadas e melhoradas (a partir de PRECIOZA_INSTAGRAM_CROPS.zip)
+
+Cada foto vem em .webp (usar no site) e .jpg (backup), ampliada 3x.
+manifest.json: recorte aplicado, tamanho original, tamanho final e texto alt sugerido.
+precioza-logo-disco.png: logo dentro do círculo, sem o anel colorido do Instagram (fundo transparente fora do círculo).
+precioza-logo-script-dourado.png: só o script dourado com fundo transparente (cabe em fundo claro e escuro).
+
+IMPORTANTE: a ampliação suaviza e dá nitidez, mas NÃO cria detalhe novo. A fonte tem ~300 px de largura.
+Boas para cards e blocos de até ~600 px de largura. Para hero em tela cheia, usar os originais da loja.
+Uso de logo e fotos depende de autorização da Precioza.

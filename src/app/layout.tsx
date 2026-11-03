@@ -4,7 +4,7 @@ import { siteConfig } from '@/config/site';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: `${siteConfig.fullName} · Proposta Conceitual OpenPage`,
+  title: `${siteConfig.fullName} · Monte Sião - MG`,
   description: siteConfig.description,
   authors: [{ name: siteConfig.meta.author }],
   keywords: siteConfig.meta.keywords,
@@ -18,20 +18,22 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: `${siteConfig.name} — Proposta Conceitual Não Oficial`,
+    title: `${siteConfig.fullName}`,
     description: siteConfig.description,
     url: siteConfig.url,
-    siteName: 'OpenPage Luxury Demonstratives',
+    siteName: 'Precioza Tricot',
     locale: siteConfig.meta.locale,
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: `${siteConfig.name} — Proposta Conceitual`,
+    title: `${siteConfig.fullName}`,
     description: siteConfig.description,
   },
   icons: {
     icon: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
+    shortcut: '/icon-192.png',
   },
 };
 
@@ -41,8 +43,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="pt-BR">
+    <html lang="pt-BR" className="dark js-motion">
       <head>
+        <meta name="theme-color" content="#0B0B0A" />
+        <meta name="color-scheme" content="dark" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
@@ -50,7 +54,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="bg-atelier-bg text-atelier-noir font-sans min-h-screen antialiased selection:bg-atelier-sand selection:text-atelier-noir overflow-x-hidden">
+      <body className="bg-bg-base text-ivory font-sans min-h-screen antialiased selection:bg-gold selection:text-bg-base overflow-x-hidden bg-grain">
         <SmoothScroll>{children}</SmoothScroll>
       </body>
     </html>

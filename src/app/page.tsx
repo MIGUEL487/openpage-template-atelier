@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
+import Preloader from '@/components/Preloader';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
 import Manifesto from '@/components/Manifesto';
@@ -18,8 +19,8 @@ import { Product } from '@/types';
 const FabricScene = dynamic(() => import('@/components/FabricScene'), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-[550px] bg-atelier-ecru flex items-center justify-center">
-      <div className="w-8 h-8 rounded-full border-2 border-atelier-stone/20 border-t-atelier-stone animate-spin" />
+    <div className="w-full h-[550px] bg-bg-raised flex items-center justify-center">
+      <div className="w-8 h-8 rounded-full border-2 border-gold/20 border-t-gold animate-spin" />
     </div>
   ),
 });
@@ -32,40 +33,43 @@ export default function Home() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   return (
-    <main className="relative min-h-screen w-full flex flex-col bg-atelier-bg text-atelier-noir">
-      {/* 0. Navegação Fixa com Blur e Banner Conceitual */}
+    <main className="relative min-h-screen w-full flex flex-col bg-bg-base text-ivory">
+      {/* Preloader curto com logo dourado (≤ 1.2s, não bloqueia LCP) */}
+      <Preloader />
+
+      {/* 0. Navegação Fixa com Logo Script Dourado e Barra de Leitura */}
       <Navbar />
 
-      {/* 1. Hero Cinematográfico com GSAP e 3D Atmosférico de Fundo */}
+      {/* 1. Hero Cinematográfico com Mosaico Fotográfico, Parallax Oposto e Marquee */}
       <Hero />
 
-      {/* 2. Manifesto da Marca & Estudo de Identidade */}
+      {/* 2. Manifesto da Marca & Dual Photography da Loja */}
       <Manifesto />
 
-      {/* 3. Destaques da Coleção (Silhuetas & Presença) */}
+      {/* 3. Destaques da Coleção com Pin Horizontal no Desktop */}
       <FeaturedCollection onSelectProduct={(product) => setSelectedProduct(product)} />
 
-      {/* 4. Three.js: Camada 3D Atmosférica e Cards Estruturais */}
+      {/* 4. Textura & Malharia: Colagem de Peças e Drapeado 3D Atmosférico */}
       <ErrorBoundary>
         <FabricScene />
       </ErrorBoundary>
 
-      {/* 5. Caderno Visual · Lookbook Editorial */}
+      {/* 5. Caderno Visual · Lookbook com Numeração Dourada */}
       <Lookbook />
 
-      {/* 6. Catálogo Completo com Filtros e Seletor de Peças */}
+      {/* 6. Catálogo com Filtros Suaves via GSAP Flip */}
       <ProductCatalog onSelectProduct={(product) => setSelectedProduct(product)} />
 
-      {/* 7. A Experiência da Boutique em Monte Sião & Cuidados */}
+      {/* 7. Boutique em Monte Sião & Ritual do Cuidado */}
       <AtelierStory />
 
-      {/* 8. Atendimento Consultivo via WhatsApp (Modo Demonstração) */}
+      {/* 8. Atendimento Exclusivo via WhatsApp Direto */}
       <WhatsAppSection />
 
-      {/* 9. Rodapé Editorial de Alto Padrão com Aviso Conceitual */}
+      {/* 9. Rodapé Editorial com Script Dourado */}
       <Footer />
 
-      {/* Modal Interativo de Consulta do Produto com Geração Contextual */}
+      {/* Modal Interativo com Animação GSAP e Abertura do WhatsApp da Loja */}
       <ProductModal
         product={selectedProduct}
         onClose={() => setSelectedProduct(null)}

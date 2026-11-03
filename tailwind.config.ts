@@ -9,15 +9,27 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // Paleta Semântica Preto + Dourado (Precioza Tricot)
+        'bg-base': '#0B0B0A',      // fundo principal (preto quente)
+        'bg-raised': '#141311',    // seções alternadas, cards
+        'bg-soft': '#1C1A17',      // superfícies, modal, inputs
+        'line': '#2A2723',         // divisores/bordas sutis
+        'gold': '#B19462',         // dourado acento primário (amostrado do logo)
+        'gold-light': '#D6BC8B',   // hover, realces, textos de destaque
+        'gold-deep': '#8A7248',    // linhas finas, ícones discretos
+        'ivory': '#F3EDE2',        // texto principal sobre preto
+        'stone': '#A39B8E',        // texto secundário (contraste ≥ 4.5:1)
+
+        // Mapeamento retrocompatível para classes existentes
         atelier: {
-          bg: '#F6F3ED',
-          ecru: '#FAF8F5',
-          sand: '#D9C8B3',
-          stone: '#89847E',
-          noir: '#20201E',
-          dark: '#161615',
-          border: '#E4DFD5',
-          subtle: '#EDE8E0',
+          bg: '#0B0B0A',
+          ecru: '#141311',
+          sand: '#B19462',
+          stone: '#A39B8E',
+          noir: '#F3EDE2',
+          dark: '#0B0B0A',
+          border: '#2A2723',
+          subtle: '#1C1A17',
         },
       },
       fontFamily: {

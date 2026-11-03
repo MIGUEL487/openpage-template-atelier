@@ -43,6 +43,7 @@ export interface Product {
   featured?: boolean;
   needsOriginal?: boolean;
   objectPosition?: string;
+  maxDisplayWidth?: number;
 }
 
 export interface LookbookItem {
@@ -55,6 +56,7 @@ export interface LookbookItem {
   quote: string;
   needsOriginal?: boolean;
   objectPosition?: string;
+  maxDisplayWidth?: number;
 }
 
 export interface BrandContent {
@@ -66,6 +68,7 @@ export interface BrandContent {
   description: string;
   logo: {
     avatarUrl?: string;
+    scriptUrl?: string;
     wordmark: string;
     submark: string;
   };
@@ -86,6 +89,8 @@ export interface BrandContent {
     bottomBarLeft: string;
     bottomBarRight: string;
     image: BrandImageRef;
+    mosaicImages?: BrandImageRef[];
+    marqueeText?: string;
   };
   manifesto: {
     kicker: string;
@@ -96,6 +101,7 @@ export interface BrandContent {
     imageCaption: string;
     imageSubcaption: string;
     image: BrandImageRef;
+    overlayImage?: BrandImageRef;
   };
   collectionStory: {
     kicker: string;
@@ -108,6 +114,7 @@ export interface BrandContent {
     title: string;
     description: string;
     cards: { title: string; description: string }[];
+    textureImages?: BrandImageRef[];
   };
   lookbook: {
     kicker: string;
@@ -130,6 +137,7 @@ export interface BrandContent {
     highlightTitle: string;
     highlightDescription: string;
     image: BrandImageRef;
+    storeImages?: BrandImageRef[];
     storeDetails?: {
       address: string;
       hoursNotice: string;

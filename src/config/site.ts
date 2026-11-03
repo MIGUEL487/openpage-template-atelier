@@ -3,8 +3,7 @@ import { atelierBrand } from './brands/atelier';
 import { preciozaBrand } from './brands/precioza';
 
 // Seleção da marca ativa com suporte à variável de ambiente NEXT_PUBLIC_BRAND
-// Valor padrão: 'precioza' (para a demonstração solicitada)
-// Para voltar ao template genérico do ATELIER, basta alterar para 'atelier' ou definir NEXT_PUBLIC_BRAND=atelier
+// Valor padrão: 'precioza' (com kill switch seguro para 'atelier')
 const activeBrandId: BrandId =
   (process.env.NEXT_PUBLIC_BRAND as BrandId) || 'precioza';
 
@@ -26,7 +25,7 @@ export const siteConfig = {
   url: 'https://openpage-template-atelier.mi-c-openheimer.workers.dev',
 
   meta: {
-    author: `${currentBrandContent.name} — OpenPage Showcase`,
+    author: `${currentBrandContent.name} · Monte Sião - MG`,
     keywords: [
       currentBrandContent.name,
       'malharia de luxo',
@@ -34,17 +33,18 @@ export const siteConfig = {
       'moda autoral',
       'monte sião',
       'tricot refinado',
+      'alta costura',
+      'vestidos tricot',
     ],
     locale: 'pt_BR',
   },
 
-  // Configuração central e segura do WhatsApp
-  // Modo demonstração ATIVADO por padrão (Regra 5):
-  // Nenhuma mensagem é disparada e o número nunca é acionado a menos que NEXT_PUBLIC_WHATSAPP_LIVE='true'
+  // Configuração central e real do WhatsApp da loja (Regra 3)
+  // Autorizado pela loja: número 5535992287718, isDemo: false
   whatsapp: {
-    phoneNumber: '5511999999999', // Placeholder seguro padrão
-    isDemo: true,
-    defaultMessage: `Olá! Gostaria de consultar informações sobre a coleção e peças apresentadas no catálogo da ${currentBrandContent.name}.`,
+    phoneNumber: '5535992287718',
+    isDemo: false,
+    defaultMessage: `Olá! Gostaria de consultar informações sobre as peças e coleções da ${currentBrandContent.name}.`,
     generateProductMessage: (
       productName: string,
       color: string,
@@ -53,10 +53,13 @@ export const siteConfig = {
     ) => {
       return `Olá! Tenho interesse no ${productName} (Cor: ${color}, Tamanho: ${size}${
         code ? `, Ref: ${code}` : ''
-      }) visto no catálogo demonstrativo da ${currentBrandContent.name}.`;
+      }) apresentado no site da ${currentBrandContent.name}.`;
     },
     generateBespokeMessage: (subject: string) => {
       return `Olá! Gostaria de tirar dúvidas com a equipe da ${currentBrandContent.name} sobre: ${subject}.`;
+    },
+    getWhatsAppUrl: (message: string) => {
+      return `https://wa.me/5535992287718?text=${encodeURIComponent(message)}`;
     },
   },
 
@@ -64,7 +67,7 @@ export const siteConfig = {
     { label: 'Coleção', href: '#colecao' },
     { label: 'Lookbook', href: '#lookbook' },
     { label: 'Catálogo', href: '#catalogo' },
-    { label: 'O Ateliê', href: '#atelie' },
+    { label: 'A Marca', href: '#marca' },
     { label: 'Contato', href: '#contato' },
   ],
 

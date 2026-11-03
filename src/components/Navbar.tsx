@@ -1,172 +1,216 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
 import { siteConfig } from '@/config/site';
 import { useLenis } from '@/components/SmoothScroll';
-import { MessageCircle, Menu, X, ArrowUpRight, AlertCircle, Copy, Check } from 'lucide-react';
+import { MessageCircle, Menu, X, ArrowUpRight } from 'lucide-react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isHidden, setIsHidden] = useState(false);
+  const [activeSection, setActiveSection] = useState<string>('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [copiedBanner, setCopiedBanner] = useState(false);
+  const progressBarRef = useRef<HTMLDivElement>(null);
+  const lastScrollYRef = useRef(0);
   const { scrollTo } = useLenis();
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 30);
+    gsap.registerPlugin(ScrollTrigger);
+
+    // 1. Barra de progresso de leitura no topo (2px dourado)
+    const updateProgress = () => {
+      const scrollY = window.scrollY;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const progress = docHeight > 0 ? Math.min(1, Math.max(0, scrollY / docHeight)) : 0;
+
+      if (progressBarRef.current) {
+        progressBarRef.current.style.transform = `scaleX(${progress})`;
+      }
+
+      // 2. Estado de scroll (fundo translúcido com blur)
+      setIsScrolled(scrollY > 40);
+
+      // 3. Esconder ao rolar para baixo e reaparecer ao subir
+      if (scrollY > 160) {
+        if (scrollY > lastScrollYRef.current && scrollY - lastScrollYRef.current > 10) {
+          setIsHidden(true);
+        } else if (lastScrollYRef.current - scrollY > 8) {
+          setIsHidden(false);
+        }
+      } else {
+        setIsHidden(false);
+      }
+
+      lastScrollYRef.current = scrollY;
     };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+
+    window.addEventListener('scroll', updateProgress, { passive: true });
+
+    // 4. Seção ativa via ScrollTrigger
+    const sections = ['colecao', 'lookbook', 'catalogo', 'marca', 'contato'];
+    const triggers: any[] = [];
+
+    sections.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) {
+        const trigger = ScrollTrigger.create({
+          trigger: el,
+          start: 'top 50%',
+          end: 'bottom 50%',
+          onEnter: () => setActiveSection(id),
+          onEnterBack: () => setActiveSection(id),
+        });
+        triggers.push(trigger);
+      }
+    });
+
+    return () => {
+      window.removeEventListener('scroll', updateProgress);
+      triggers.forEach((t) => t.kill());
+    };
   }, []);
 
   const handleNavClick = (href: string, e: React.MouseEvent) => {
     e.preventDefault();
     setMobileMenuOpen(false);
-    scrollTo(href, { offset: -80 });
+    scrollTo(href, { offset: -80, duration: 1.4 });
   };
 
-  const handleConsultancyClick = () => {
+  const handleWhatsAppClick = () => {
     const message = siteConfig.whatsapp.defaultMessage;
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(message);
-      setCopiedBanner(true);
-      setTimeout(() => setCopiedBanner(false), 3000);
-    }
-
-    const isLive = process.env.NEXT_PUBLIC_WHATSAPP_LIVE === 'true';
-    const hasLivePhone =
-      siteConfig.whatsapp.phoneNumber &&
-      siteConfig.whatsapp.phoneNumber !== '5511999999999';
-
-    if (isLive && hasLivePhone) {
-      const url = `https://wa.me/${siteConfig.whatsapp.phoneNumber}?text=${encodeURIComponent(message)}`;
-      window.open(url, '_blank', 'noopener,noreferrer');
-    }
+    const url = siteConfig.whatsapp.getWhatsAppUrl(message);
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   const brand = siteConfig.brandContent;
 
   return (
     <>
-      {/* 0. Banner Fixo Discreto de Demonstração Não Oficial (Regra 4) */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-atelier-noir text-atelier-bg/90 text-[10px] sm:text-[11px] py-1.5 px-4 font-sans tracking-wider flex items-center justify-between border-b border-white/10">
-        <div className="flex items-center space-x-2 mx-auto sm:mx-0">
-          <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-          <span className="font-medium tracking-widest uppercase">
-            {brand.isConceptDemo
-              ? 'Proposta Conceitual Não Oficial · Demonstração OpenPage'
-              : 'Template Demonstrativo OpenPage · ATELIER'}
-          </span>
-          <span className="hidden md:inline text-atelier-stone">|</span>
-          <span className="hidden md:inline text-atelier-stone">
-            {brand.isConceptDemo
-              ? 'Ambiente de estudo e validação sem vínculo comercial ativo'
-              : 'Arquitetura para marcas autorais'}
-          </span>
-        </div>
-
-        {copiedBanner && (
-          <span className="hidden sm:inline-flex items-center text-emerald-400 text-[10px] font-sans">
-            <Check className="w-3 h-3 mr-1" />
-            Mensagem copiada para a área de transferência!
-          </span>
-        )}
+      {/* 1. Barra de progresso de leitura dourada de 2px no topo (Seção 5.3 item 8) */}
+      <div className="fixed top-0 left-0 right-0 h-[2px] z-50 bg-line pointer-events-none">
+        <div
+          ref={progressBarRef}
+          className="h-full bg-gold w-full origin-left scale-x-0 transition-transform duration-75 ease-out"
+        />
       </div>
 
-      {/* Main Header / Navbar */}
+      {/* 2. Header / Navbar com autohide e fundo translúcido escuro */}
       <header
-        className={`fixed top-[28px] sm:top-[30px] left-0 right-0 z-40 transition-all duration-300 ease-editorial ${
+        className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ease-editorial ${
+          isHidden ? '-translate-y-full' : 'translate-y-0'
+        } ${
           isScrolled
-            ? 'bg-atelier-bg/90 backdrop-blur-md border-b border-atelier-border/70 py-3 shadow-sm'
-            : 'bg-transparent py-5'
+            ? 'bg-bg-base/85 backdrop-blur-md border-b border-line py-3 shadow-2xl'
+            : 'bg-transparent py-5 sm:py-6'
         }`}
       >
         <div className="max-w-7xl mx-auto px-6 lg:px-12 flex items-center justify-between">
-          {/* Brand Wordmark (Regra 2.1: tipográfico neutro em Cormorant) */}
+          {/* Logo Script Dourado com Next/Image */}
           <a
             href="#"
             onClick={(e) => handleNavClick('#top', e)}
-            className="group flex flex-col items-start focus:outline-none focus-visible:ring-1 focus-visible:ring-atelier-noir"
+            className="group flex items-center focus:outline-none focus-visible:ring-1 focus-visible:ring-gold"
+            aria-label="Precioza Tricot - Página Inicial"
           >
-            <span className="font-serif text-2xl sm:text-3xl tracking-[0.24em] text-atelier-noir font-normal transition-colors group-hover:text-atelier-stone">
-              {brand.logo.wordmark}
-            </span>
-            <span className="text-[9px] uppercase tracking-ultra text-atelier-stone font-sans -mt-0.5">
-              {brand.logo.submark}
-            </span>
+            <div className="relative transition-all duration-300">
+              <Image
+                src="/brands/precioza/processed/precioza-logo-script-dourado.webp"
+                alt="Precioza"
+                width={200}
+                height={70}
+                priority
+                className={`w-auto object-contain transition-all duration-300 ${
+                  isScrolled ? 'h-7 sm:h-8' : 'h-8 sm:h-9'
+                }`}
+              />
+            </div>
           </a>
 
-          {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center space-x-8">
-            {siteConfig.navigation.map((item) => (
-              <a
-                key={item.href}
-                href={item.href}
-                onClick={(e) => handleNavClick(item.href, e)}
-                className="text-xs uppercase tracking-widest text-atelier-noir/80 hover:text-atelier-noir transition-colors duration-200 relative py-1 group focus:outline-none focus-visible:underline"
-              >
-                {item.label}
-                <span className="absolute bottom-0 left-0 w-0 h-[1px] bg-atelier-noir transition-all duration-300 group-hover:w-full" />
-              </a>
-            ))}
-          </nav>
-
-          {/* Consultation Demo Action */}
-          <div className="hidden sm:flex items-center space-x-4">
-            <button
-              onClick={handleConsultancyClick}
-              className="flex items-center space-x-2 text-xs uppercase tracking-widest border border-atelier-noir/20 bg-atelier-noir text-atelier-bg hover:bg-atelier-stone px-4 py-2.5 rounded-full transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-atelier-noir active:scale-95 shadow-sm"
-              aria-label="Abrir modo de consulta"
-              title="Copiar mensagem demonstrativa de atendimento"
-            >
-              <MessageCircle className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Consultoria</span>
-            </button>
-          </div>
-
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 text-atelier-noir focus:outline-none"
-            aria-label={mobileMenuOpen ? 'Fechar menu de navegação' : 'Abrir menu de navegação'}
-            aria-expanded={mobileMenuOpen}
-          >
-            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
-        </div>
-
-        {/* Mobile Drawer */}
-        {mobileMenuOpen && (
-          <div className="md:hidden fixed inset-0 top-[85px] bg-atelier-bg/95 backdrop-blur-xl border-t border-atelier-border z-40 p-8 flex flex-col justify-between">
-            <nav className="flex flex-col space-y-5 pt-2">
-              {siteConfig.navigation.map((item) => (
+          {/* Navigation Links (Desktop) */}
+          <nav className="hidden md:flex items-center space-x-8 lg:space-x-10">
+            {siteConfig.navigation.map((item) => {
+              const sectionId = item.href.replace('#', '');
+              const isActive = activeSection === sectionId;
+              return (
                 <a
-                  key={item.href}
+                  key={item.label}
                   href={item.href}
                   onClick={(e) => handleNavClick(item.href, e)}
-                  className="font-serif text-2xl text-atelier-noir flex items-center justify-between border-b border-atelier-border/50 pb-3"
+                  className={`text-[12px] uppercase tracking-[0.2em] font-sans transition-colors duration-200 relative py-1 ${
+                    isActive
+                      ? 'text-gold-light font-medium'
+                      : 'text-stone hover:text-ivory'
+                  }`}
                 >
-                  <span>{item.label}</span>
-                  <ArrowUpRight className="w-5 h-5 text-atelier-stone/50" />
+                  {item.label}
+                  {isActive && (
+                    <span className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-gold rounded-full" />
+                  )}
                 </a>
-              ))}
-            </nav>
+              );
+            })}
+          </nav>
 
-            <div className="space-y-3 pt-6 border-t border-atelier-border">
-              <button
-                onClick={handleConsultancyClick}
-                className="w-full flex items-center justify-center space-x-2 py-3 px-6 rounded-xl bg-atelier-noir text-atelier-bg font-sans text-xs uppercase tracking-widest"
-              >
-                <MessageCircle className="w-4 h-4 text-emerald-400" />
-                <span>Consultar Coleção (Demo)</span>
-              </button>
-              <p className="text-[10px] text-center text-atelier-stone">
-                Demonstração conceitual OpenPage · Nenhuma compra real
-              </p>
-            </div>
+          {/* CTA WhatsApp Real e Menu Hambúrguer */}
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={handleWhatsAppClick}
+              className="hidden sm:inline-flex items-center space-x-2 text-[11px] uppercase tracking-widest font-sans px-4 py-2 bg-gold text-bg-base font-semibold hover:bg-gold-light transition-all duration-200 shadow-sm rounded-none"
+            >
+              <MessageCircle className="w-3.5 h-3.5 text-bg-base fill-bg-base" />
+              <span>WhatsApp</span>
+            </button>
+
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden p-2 text-stone hover:text-ivory focus:outline-none focus-visible:ring-1 focus-visible:ring-gold"
+              aria-label={mobileMenuOpen ? 'Fechar menu' : 'Abrir menu'}
+            >
+              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
           </div>
-        )}
+        </div>
       </header>
+
+      {/* 3. Mobile Navigation Drawer */}
+      <div
+        className={`fixed inset-0 z-30 bg-bg-base/98 backdrop-blur-xl transition-all duration-300 md:hidden flex flex-col justify-between p-8 pt-28 ${
+          mobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}
+      >
+        <nav className="flex flex-col space-y-6">
+          {siteConfig.navigation.map((item) => (
+            <a
+              key={item.label}
+              href={item.href}
+              onClick={(e) => handleNavClick(item.href, e)}
+              className="text-2xl font-serif tracking-wide text-ivory hover:text-gold transition-colors flex items-center justify-between border-b border-line pb-4"
+            >
+              <span>{item.label}</span>
+              <ArrowUpRight className="w-5 h-5 text-gold-deep" />
+            </a>
+          ))}
+        </nav>
+
+        <div className="pt-6 border-t border-line flex flex-col space-y-4">
+          <p className="text-[11px] uppercase tracking-widest text-stone font-sans">
+            {brand.contact.city || 'Monte Sião — Minas Gerais'}
+          </p>
+          <button
+            onClick={() => {
+              setMobileMenuOpen(false);
+              handleWhatsAppClick();
+            }}
+            className="w-full flex items-center justify-center space-x-2 text-xs uppercase tracking-widest font-sans py-3 bg-gold text-bg-base font-semibold hover:bg-gold-light transition-colors"
+          >
+            <MessageCircle className="w-4 h-4 text-bg-base fill-bg-base" />
+            <span>Consultoria via WhatsApp</span>
+          </button>
+        </div>
+      </div>
     </>
   );
 }

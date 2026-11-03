@@ -1,524 +1,272 @@
-[
-  {
-    "originalFile": "01_logo_avatar.png",
-    "slug": "logo-avatar",
-    "alt": "Logotipo Precioza em caligrafia dourada sobre medalhão grafite escuro",
-    "originalDimensions": {
-      "width": 260,
-      "height": 260
-    },
-    "cropApplied": {
-      "left": 0,
-      "top": 0,
-      "width": 260,
-      "height": 260
-    },
-    "outputDimensions": {
-      "width": 260,
-      "height": 260
-    },
-    "webp": {
-      "filename": "logo-avatar.webp",
-      "path": "/brands/precioza/processed/logo-avatar.webp",
-      "bytes": 6482
-    },
-    "avif": {
-      "filename": "logo-avatar.avif",
-      "path": "/brands/precioza/processed/logo-avatar.avif",
-      "bytes": 5024
-    }
-  },
-  {
-    "originalFile": "02_store_entrance.png",
-    "slug": "store-entrance",
-    "alt": "Fachada e vitrine da loja física Precioza com letreiro dourado em Monte Sião",
-    "originalDimensions": {
-      "width": 297,
-      "height": 513
-    },
-    "cropApplied": {
-      "left": 0,
-      "top": 0,
-      "width": 297,
-      "height": 513
-    },
-    "outputDimensions": {
-      "width": 297,
-      "height": 513
-    },
-    "webp": {
-      "filename": "store-entrance.webp",
-      "path": "/brands/precioza/processed/store-entrance.webp",
-      "bytes": 20276
-    },
-    "avif": {
-      "filename": "store-entrance.avif",
-      "path": "/brands/precioza/processed/store-entrance.avif",
-      "bytes": 21827
-    }
-  },
-  {
-    "originalFile": "03_model_shopping_bags.png",
-    "slug": "model-shopping-bags",
-    "alt": "Cliente segurando sacolas personalizadas no interior aconchegante da boutique",
-    "originalDimensions": {
-      "width": 297,
-      "height": 513
-    },
-    "cropApplied": {
-      "left": 0,
-      "top": 0,
-      "width": 297,
-      "height": 513
-    },
-    "outputDimensions": {
-      "width": 297,
-      "height": 513
-    },
-    "webp": {
-      "filename": "model-shopping-bags.webp",
-      "path": "/brands/precioza/processed/model-shopping-bags.webp",
-      "bytes": 20220
-    },
-    "avif": {
-      "filename": "model-shopping-bags.avif",
-      "path": "/brands/precioza/processed/model-shopping-bags.avif",
-      "bytes": 23038
-    }
-  },
-  {
-    "originalFile": "04_knit_swatches.png",
-    "slug": "knit-swatches",
-    "alt": "Araras e texturas de peças em tricô e malharia artesanal",
-    "originalDimensions": {
-      "width": 297,
-      "height": 513
-    },
-    "cropApplied": {
-      "left": 0,
-      "top": 0,
-      "width": 297,
-      "height": 513
-    },
-    "outputDimensions": {
-      "width": 297,
-      "height": 513
-    },
-    "webp": {
-      "filename": "knit-swatches.webp",
-      "path": "/brands/precioza/processed/knit-swatches.webp",
-      "bytes": 25152
-    },
-    "avif": {
-      "filename": "knit-swatches.avif",
-      "path": "/brands/precioza/processed/knit-swatches.avif",
-      "bytes": 29115
-    }
-  },
-  {
-    "originalFile": "05_brand_bag_novidades.png",
-    "slug": "brand-bag-novidades",
-    "alt": "Sacola oficial da marca em papel kraft nobre com aplicação em dourado",
-    "originalDimensions": {
-      "width": 298,
-      "height": 513
-    },
-    "cropApplied": {
-      "left": 0,
-      "top": 0,
-      "width": 298,
-      "height": 513
-    },
-    "outputDimensions": {
-      "width": 298,
-      "height": 513
-    },
-    "webp": {
-      "filename": "brand-bag-novidades.webp",
-      "path": "/brands/precioza/processed/brand-bag-novidades.webp",
-      "bytes": 21926
-    },
-    "avif": {
-      "filename": "brand-bag-novidades.avif",
-      "path": "/brands/precioza/processed/brand-bag-novidades.avif",
-      "bytes": 25828
-    }
-  },
-  {
-    "originalFile": "06_cream_dress_model.png",
-    "slug": "cream-dress-model",
-    "alt": "Modelo com vestido longo em tom creme com cinto estruturado",
-    "originalDimensions": {
-      "width": 297,
-      "height": 439
-    },
-    "cropApplied": {
-      "left": 0,
-      "top": 0,
-      "width": 297,
-      "height": 412
-    },
-    "outputDimensions": {
-      "width": 297,
-      "height": 412
-    },
-    "webp": {
-      "filename": "cream-dress-model.webp",
-      "path": "/brands/precioza/processed/cream-dress-model.webp",
-      "bytes": 11924
-    },
-    "avif": {
-      "filename": "cream-dress-model.avif",
-      "path": "/brands/precioza/processed/cream-dress-model.avif",
-      "bytes": 16114
-    }
-  },
-  {
-    "originalFile": "07_wavy_dress_model.png",
-    "slug": "wavy-dress-model",
-    "alt": "Modelo com vestido fluido em estampa ondulada contemporânea",
-    "originalDimensions": {
-      "width": 297,
-      "height": 439
-    },
-    "cropApplied": {
-      "left": 0,
-      "top": 0,
-      "width": 297,
-      "height": 412
-    },
-    "outputDimensions": {
-      "width": 297,
-      "height": 412
-    },
-    "webp": {
-      "filename": "wavy-dress-model.webp",
-      "path": "/brands/precioza/processed/wavy-dress-model.webp",
-      "bytes": 14996
-    },
-    "avif": {
-      "filename": "wavy-dress-model.avif",
-      "path": "/brands/precioza/processed/wavy-dress-model.avif",
-      "bytes": 19094
-    }
-  },
-  {
-    "originalFile": "08_favorites_week_textile.png",
-    "slug": "favorites-week-textile",
-    "alt": "Composição têxtil com padronagens gráficas",
-    "originalDimensions": {
-      "width": 297,
-      "height": 439
-    },
-    "cropApplied": {
-      "left": 0,
-      "top": 0,
-      "width": 297,
-      "height": 412
-    },
-    "outputDimensions": {
-      "width": 297,
-      "height": 412
-    },
-    "webp": {
-      "filename": "favorites-week-textile.webp",
-      "path": "/brands/precioza/processed/favorites-week-textile.webp",
-      "bytes": 13660
-    },
-    "avif": {
-      "filename": "favorites-week-textile.avif",
-      "path": "/brands/precioza/processed/favorites-week-textile.avif",
-      "bytes": 15953
-    }
-  },
-  {
-    "originalFile": "09_blue_dress_detail.png",
-    "slug": "blue-dress-detail",
-    "alt": "Detalhe do busto e caimento de vestido em tons de azul",
-    "originalDimensions": {
-      "width": 298,
-      "height": 439
-    },
-    "cropApplied": {
-      "left": 0,
-      "top": 0,
-      "width": 298,
-      "height": 412
-    },
-    "outputDimensions": {
-      "width": 298,
-      "height": 412
-    },
-    "webp": {
-      "filename": "blue-dress-detail.webp",
-      "path": "/brands/precioza/processed/blue-dress-detail.webp",
-      "bytes": 11316
-    },
-    "avif": {
-      "filename": "blue-dress-detail.avif",
-      "path": "/brands/precioza/processed/blue-dress-detail.avif",
-      "bytes": 14955
-    }
-  },
-  {
-    "originalFile": "10_navy_jumpsuit_model.png",
-    "slug": "navy-jumpsuit-model",
-    "alt": "Modelo com macacão alfaiataria em azul marinho com faixa de amarração",
-    "originalDimensions": {
-      "width": 297,
-      "height": 478
-    },
-    "cropApplied": {
-      "left": 0,
-      "top": 0,
-      "width": 297,
-      "height": 478
-    },
-    "outputDimensions": {
-      "width": 297,
-      "height": 478
-    },
-    "webp": {
-      "filename": "navy-jumpsuit-model.webp",
-      "path": "/brands/precioza/processed/navy-jumpsuit-model.webp",
-      "bytes": 10172
-    },
-    "avif": {
-      "filename": "navy-jumpsuit-model.avif",
-      "path": "/brands/precioza/processed/navy-jumpsuit-model.avif",
-      "bytes": 12403
-    }
-  },
-  {
-    "originalFile": "11_blue_pattern_model.png",
-    "slug": "blue-pattern-model",
-    "alt": "Vestido longo com estampa botânica em nuances de azul e branco",
-    "originalDimensions": {
-      "width": 298,
-      "height": 478
-    },
-    "cropApplied": {
-      "left": 0,
-      "top": 0,
-      "width": 298,
-      "height": 478
-    },
-    "outputDimensions": {
-      "width": 298,
-      "height": 478
-    },
-    "webp": {
-      "filename": "blue-pattern-model.webp",
-      "path": "/brands/precioza/processed/blue-pattern-model.webp",
-      "bytes": 26510
-    },
-    "avif": {
-      "filename": "blue-pattern-model.avif",
-      "path": "/brands/precioza/processed/blue-pattern-model.avif",
-      "bytes": 28995
-    }
-  },
-  {
-    "originalFile": "12_store_rack_interior.png",
-    "slug": "store-rack-interior",
-    "alt": "Interior da loja com iluminação suave e araras organizadas por cartela de cores",
-    "originalDimensions": {
-      "width": 297,
-      "height": 439
-    },
-    "cropApplied": {
-      "left": 0,
-      "top": 0,
-      "width": 297,
-      "height": 412
-    },
-    "outputDimensions": {
-      "width": 297,
-      "height": 412
-    },
-    "webp": {
-      "filename": "store-rack-interior.webp",
-      "path": "/brands/precioza/processed/store-rack-interior.webp",
-      "bytes": 22512
-    },
-    "avif": {
-      "filename": "store-rack-interior.avif",
-      "path": "/brands/precioza/processed/store-rack-interior.avif",
-      "bytes": 24759
-    }
-  },
-  {
-    "originalFile": "13_pink_dress_model.png",
-    "slug": "pink-dress-model",
-    "alt": "Vestido longo feminino em estampa aquarelada com tons de rosa antigo e coral",
-    "originalDimensions": {
-      "width": 297,
-      "height": 513
-    },
-    "cropApplied": {
-      "left": 0,
-      "top": 0,
-      "width": 297,
-      "height": 513
-    },
-    "outputDimensions": {
-      "width": 297,
-      "height": 513
-    },
-    "webp": {
-      "filename": "pink-dress-model.webp",
-      "path": "/brands/precioza/processed/pink-dress-model.webp",
-      "bytes": 17498
-    },
-    "avif": {
-      "filename": "pink-dress-model.avif",
-      "path": "/brands/precioza/processed/pink-dress-model.avif",
-      "bytes": 21066
-    }
-  },
-  {
-    "originalFile": "14_crochet_dress_detail.png",
-    "slug": "crochet-dress-detail",
-    "alt": "Detalhe artesanal dos pontos e tramas em crochê manual",
-    "originalDimensions": {
-      "width": 297,
-      "height": 513
-    },
-    "cropApplied": {
-      "left": 0,
-      "top": 0,
-      "width": 297,
-      "height": 513
-    },
-    "outputDimensions": {
-      "width": 297,
-      "height": 513
-    },
-    "webp": {
-      "filename": "crochet-dress-detail.webp",
-      "path": "/brands/precioza/processed/crochet-dress-detail.webp",
-      "bytes": 20082
-    },
-    "avif": {
-      "filename": "crochet-dress-detail.avif",
-      "path": "/brands/precioza/processed/crochet-dress-detail.avif",
-      "bytes": 22094
-    }
-  },
-  {
-    "originalFile": "15_colorways_product_card.png",
-    "slug": "colorways-product-card",
-    "alt": "Cartela de tonalidades e composições da linha de malharia",
-    "originalDimensions": {
-      "width": 298,
-      "height": 513
-    },
-    "cropApplied": {
-      "left": 0,
-      "top": 0,
-      "width": 298,
-      "height": 513
-    },
-    "outputDimensions": {
-      "width": 298,
-      "height": 513
-    },
-    "webp": {
-      "filename": "colorways-product-card.webp",
-      "path": "/brands/precioza/processed/colorways-product-card.webp",
-      "bytes": 27540
-    },
-    "avif": {
-      "filename": "colorways-product-card.avif",
-      "path": "/brands/precioza/processed/colorways-product-card.avif",
-      "bytes": 31733
-    }
-  },
-  {
-    "originalFile": "16_striped_outfit_model.png",
-    "slug": "striped-outfit-model",
-    "alt": "Conjunto clássico listrado em tons claros de off-white e linho",
-    "originalDimensions": {
-      "width": 297,
-      "height": 439
-    },
-    "cropApplied": {
-      "left": 0,
-      "top": 0,
-      "width": 297,
-      "height": 412
-    },
-    "outputDimensions": {
-      "width": 297,
-      "height": 412
-    },
-    "webp": {
-      "filename": "striped-outfit-model.webp",
-      "path": "/brands/precioza/processed/striped-outfit-model.webp",
-      "bytes": 9228
-    },
-    "avif": {
-      "filename": "striped-outfit-model.avif",
-      "path": "/brands/precioza/processed/striped-outfit-model.avif",
-      "bytes": 12080
-    }
-  },
-  {
-    "originalFile": "17_pink_dress_alt_pose.png",
-    "slug": "pink-dress-alt-pose",
-    "alt": "Vestido longo estampado em movimento fluido",
-    "originalDimensions": {
-      "width": 297,
-      "height": 439
-    },
-    "cropApplied": {
-      "left": 0,
-      "top": 0,
-      "width": 297,
-      "height": 412
-    },
-    "outputDimensions": {
-      "width": 297,
-      "height": 412
-    },
-    "webp": {
-      "filename": "pink-dress-alt-pose.webp",
-      "path": "/brands/precioza/processed/pink-dress-alt-pose.webp",
-      "bytes": 12058
-    },
-    "avif": {
-      "filename": "pink-dress-alt-pose.avif",
-      "path": "/brands/precioza/processed/pink-dress-alt-pose.avif",
-      "bytes": 13859
-    }
-  },
-  {
-    "originalFile": "18_blue_evening_model.png",
-    "slug": "blue-evening-model",
-    "alt": "Vestido longo em azul royal acetinado para ocasiões especiais",
-    "originalDimensions": {
-      "width": 298,
-      "height": 439
-    },
-    "cropApplied": {
-      "left": 0,
-      "top": 0,
-      "width": 298,
-      "height": 412
-    },
-    "outputDimensions": {
-      "width": 298,
-      "height": 412
-    },
-    "webp": {
-      "filename": "blue-evening-model.webp",
-      "path": "/brands/precioza/processed/blue-evening-model.webp",
-      "bytes": 13404
-    },
-    "avif": {
-      "filename": "blue-evening-model.avif",
-      "path": "/brands/precioza/processed/blue-evening-model.avif",
-      "bytes": 16287
-    }
-  }
-]
+{
+ "precioza-loja-entrada": {
+  "fonte": "02_store_entrance.png",
+  "recorte_px": [
+   32,
+   14,
+   297,
+   374
+  ],
+  "nativo": [
+   265,
+   360
+  ],
+  "saida": [
+   795,
+   1080
+  ],
+  "alt": "Entrada da loja com letreiro dourado"
+ },
+ "precioza-cliente-sacolas": {
+  "fonte": "03_model_shopping_bags.png",
+  "recorte_px": [
+   86,
+   14,
+   297,
+   305
+  ],
+  "nativo": [
+   211,
+   291
+  ],
+  "saida": [
+   633,
+   873
+  ],
+  "alt": "Cliente com sacolas da marca"
+ },
+ "precioza-trico-conjunto-vitrine": {
+  "fonte": "04_knit_swatches.png",
+  "recorte_px": [
+   0,
+   38,
+   132,
+   300
+  ],
+  "nativo": [
+   132,
+   262
+  ],
+  "saida": [
+   396,
+   786
+  ],
+  "alt": "Manequim com conjunto de tricô creme"
+ },
+ "precioza-trico-pecas-arara": {
+  "fonte": "04_knit_swatches.png",
+  "recorte_px": [
+   137,
+   18,
+   297,
+   395
+  ],
+  "nativo": [
+   160,
+   377
+  ],
+  "saida": [
+   480,
+   1131
+  ],
+  "alt": "Peças de tricô em arara, cinza e preto"
+ },
+ "precioza-trico-cores-arara": {
+  "fonte": "05_brand_bag_novidades.png",
+  "recorte_px": [
+   0,
+   36,
+   184,
+   395
+  ],
+  "nativo": [
+   184,
+   359
+  ],
+  "saida": [
+   552,
+   1077
+  ],
+  "alt": "Tricôs em bege, rosé e vinho"
+ },
+ "precioza-vestido-creme-cinto": {
+  "fonte": "06_cream_dress_model.png",
+  "recorte_px": [
+   33,
+   0,
+   297,
+   406
+  ],
+  "nativo": [
+   264,
+   406
+  ],
+  "saida": [
+   792,
+   1218
+  ],
+  "alt": "Vestido creme com cinto metálico"
+ },
+ "precioza-vestido-ondas": {
+  "fonte": "07_wavy_dress_model.png",
+  "recorte_px": [
+   86,
+   2,
+   297,
+   412
+  ],
+  "nativo": [
+   211,
+   410
+  ],
+  "saida": [
+   633,
+   1230
+  ],
+  "alt": "Vestido longo estampado em ondas"
+ },
+ "precioza-vestido-creme-detalhe": {
+  "fonte": "09_blue_dress_detail.png",
+  "recorte_px": [
+   0,
+   250,
+   186,
+   412
+  ],
+  "nativo": [
+   186,
+   162
+  ],
+  "saida": [
+   558,
+   486
+  ],
+  "alt": "Detalhe do cinto do vestido creme"
+ },
+ "precioza-macacao-marinho": {
+  "fonte": "10_navy_jumpsuit_model.png",
+  "recorte_px": [
+   86,
+   20,
+   297,
+   476
+  ],
+  "nativo": [
+   211,
+   456
+  ],
+  "saida": [
+   633,
+   1368
+  ],
+  "alt": "Macacão azul-marinho"
+ },
+ "precioza-arara-interior": {
+  "fonte": "12_store_rack_interior.png",
+  "recorte_px": [
+   86,
+   22,
+   297,
+   416
+  ],
+  "nativo": [
+   211,
+   394
+  ],
+  "saida": [
+   633,
+   1182
+  ],
+  "alt": "Arara no interior da loja"
+ },
+ "precioza-vestido-rosa": {
+  "fonte": "13_pink_dress_model.png",
+  "recorte_px": [
+   33,
+   14,
+   297,
+   460
+  ],
+  "nativo": [
+   264,
+   446
+  ],
+  "saida": [
+   792,
+   1338
+  ],
+  "alt": "Vestido longo estampado em rosa"
+ },
+ "precioza-croche-detalhe": {
+  "fonte": "14_crochet_dress_detail.png",
+  "recorte_px": [
+   139,
+   40,
+   294,
+   460
+  ],
+  "nativo": [
+   155,
+   420
+  ],
+  "saida": [
+   465,
+   1260
+  ],
+  "alt": "Vestido com busto em crochê"
+ },
+ "precioza-croche-detalhe-2": {
+  "fonte": "15_colorways_product_card.png",
+  "recorte_px": [
+   0,
+   14,
+   186,
+   460
+  ],
+  "nativo": [
+   186,
+   446
+  ],
+  "saida": [
+   558,
+   1338
+  ],
+  "alt": "Busto em crochê e vestido creme"
+ },
+ "precioza-conjunto-listrado": {
+  "fonte": "16_striped_outfit_model.png",
+  "recorte_px": [
+   33,
+   2,
+   297,
+   410
+  ],
+  "nativo": [
+   264,
+   408
+  ],
+  "saida": [
+   792,
+   1224
+  ],
+  "alt": "Conjunto listrado com calça clara"
+ },
+ "precioza-vestido-rosa-costas": {
+  "fonte": "18_blue_evening_model.png",
+  "recorte_px": [
+   0,
+   2,
+   186,
+   410
+  ],
+  "nativo": [
+   186,
+   408
+  ],
+  "saida": [
+   558,
+   1224
+  ],
+  "alt": "Vestido rosa, vista de costas"
+ }
+}
