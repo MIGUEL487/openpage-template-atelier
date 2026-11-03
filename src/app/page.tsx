@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
-import Preloader from '@/components/Preloader';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
 import Manifesto from '@/components/Manifesto';
@@ -34,9 +33,6 @@ export default function Home() {
 
   return (
     <main className="relative min-h-screen w-full flex flex-col bg-bg-base text-ivory">
-      {/* Preloader curto com logo dourado (≤ 1.2s, não bloqueia LCP) */}
-      <Preloader />
-
       {/* 0. Navegação Fixa com Logo Script Dourado e Barra de Leitura */}
       <Navbar />
 
