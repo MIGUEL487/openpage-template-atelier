@@ -1,0 +1,22 @@
+Precioza Tricot - cropped reference images from Instagram screenshots
+
+Files:
+00_profile_header.png
+01_logo_avatar.png
+02_store_entrance.png
+03_model_shopping_bags.png
+04_knit_swatches.png
+05_brand_bag_novidades.png
+06_cream_dress_model.png
+07_wavy_dress_model.png
+08_favorites_week_textile.png
+09_blue_dress_detail.png
+10_navy_jumpsuit_model.png
+11_blue_pattern_model.png
+12_store_rack_interior.png
+13_pink_dress_model.png
+14_crochet_dress_detail.png
+15_colorways_product_card.png
+16_striped_outfit_model.png
+17_pink_dress_alt_pose.png
+18_blue_evening_model.png
