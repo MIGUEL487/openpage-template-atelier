@@ -4,21 +4,30 @@ import { siteConfig } from '@/config/site';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: `${siteConfig.name} · Malharia Contemporânea & Tear Autoral`,
+  title: `${siteConfig.fullName} · Proposta Conceitual OpenPage`,
   description: siteConfig.description,
   authors: [{ name: siteConfig.meta.author }],
   keywords: siteConfig.meta.keywords,
+  robots: {
+    index: false,
+    follow: false,
+    nocache: true,
+    googleBot: {
+      index: false,
+      follow: false,
+    },
+  },
   openGraph: {
-    title: siteConfig.fullName,
+    title: `${siteConfig.name} — Proposta Conceitual Não Oficial`,
     description: siteConfig.description,
     url: siteConfig.url,
-    siteName: siteConfig.name,
+    siteName: 'OpenPage Luxury Demonstratives',
     locale: siteConfig.meta.locale,
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: siteConfig.fullName,
+    title: `${siteConfig.name} — Proposta Conceitual`,
     description: siteConfig.description,
   },
   icons: {

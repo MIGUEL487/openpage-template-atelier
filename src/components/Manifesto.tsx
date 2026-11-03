@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react';
 import Image from 'next/image';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { manifesto } from '@/data/editorial';
+import { siteConfig } from '@/config/site';
 
 export default function Manifesto() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -15,116 +15,128 @@ export default function Manifesto() {
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
 
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) return;
+
     const ctx = gsap.context(() => {
-      // Entrada em cascata do manifesto ao entrar no viewport
-      gsap.from(headlineRef.current, {
-        opacity: 0,
-        y: 40,
-        duration: 1.2,
-        ease: 'power3.out',
-        scrollTrigger: {
-          trigger: headlineRef.current,
-          start: 'top 85%',
-        },
-      });
+      // 1. Revelação controlada com fromTo e once: true (nunca fica invisível)
+      if (headlineRef.current) {
+        gsap.fromTo(
+          headlineRef.current,
+          { opacity: 0, y: 35 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 1.1,
+            ease: 'power3.out',
+            scrollTrigger: {
+              trigger: headlineRef.current,
+              start: 'top 88%',
+              once: true,
+              invalidateOnRefresh: true,
+            },
+          }
+        );
+      }
 
-      gsap.from(textColsRef.current?.children ? Array.from(textColsRef.current.children) : [], {
-        opacity: 0,
-        y: 30,
-        stagger: 0.2,
-        duration: 1.0,
-        ease: 'power3.out',
-        scrollTrigger: {
-          trigger: textColsRef.current,
-          start: 'top 80%',
-        },
-      });
+      if (textColsRef.current?.children) {
+        gsap.fromTo(
+          Array.from(textColsRef.current.children),
+          { opacity: 0, y: 25 },
+          {
+            opacity: 1,
+            y: 0,
+            stagger: 0.18,
+            duration: 0.9,
+            ease: 'power3.out',
+            scrollTrigger: {
+              trigger: textColsRef.current,
+              start: 'top 85%',
+              once: true,
+              invalidateOnRefresh: true,
+            },
+          }
+        );
+      }
 
-      // Parallax sutil na imagem do manifesto
-      gsap.to(photoCardRef.current, {
-        yPercent: -12,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: 'top bottom',
-          end: 'bottom top',
-          scrub: true,
-        },
-      });
+      // 2. Parallax sutil na imagem do manifesto sem expor extremidades
+      if (photoCardRef.current && sectionRef.current) {
+        gsap.fromTo(
+          photoCardRef.current,
+          { yPercent: -6 },
+          {
+            yPercent: 6,
+            ease: 'none',
+            immediateRender: false,
+            scrollTrigger: {
+              trigger: sectionRef.current,
+              start: 'top bottom',
+              end: 'bottom top',
+              scrub: true,
+              invalidateOnRefresh: true,
+            },
+          }
+        );
+      }
     }, sectionRef);
 
     return () => ctx.revert();
   }, []);
 
+  const manifestoData = siteConfig.brandContent.manifesto;
+
   return (
     <section
       id="manifesto"
       ref={sectionRef}
-      className="relative w-full py-28 lg:py-36 px-6 lg:px-12 bg-atelier-ecru border-b border-atelier-border/50 overflow-hidden"
+      className="relative w-full py-20 lg:py-28 px-6 lg:px-12 bg-atelier-ecru border-b border-atelier-border/50 overflow-hidden"
     >
       <div className="max-w-7xl mx-auto">
         {/* Kicker */}
         <div className="flex items-center space-x-3 text-xs uppercase tracking-ultra text-atelier-stone mb-6">
           <span className="w-8 h-[1px] bg-atelier-stone/50" />
-          <span>{manifesto.kicker}</span>
+          <span>{manifestoData.kicker}</span>
         </div>
 
         {/* Headline */}
         <h2
           ref={headlineRef}
-          className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-normal leading-[1.12] text-atelier-noir max-w-4xl mb-16 tracking-tight"
+          className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-normal leading-[1.14] text-atelier-noir max-w-4xl mb-14 tracking-tight"
         >
-          {manifesto.headline}
+          {manifestoData.headline}
         </h2>
 
         {/* 2-Column Content + Offset Photography */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
-          {/* Left Columns: Manifesto Arguments */}
-          <div ref={textColsRef} className="lg:col-span-7 space-y-8 text-atelier-noir/85">
-            <p className="font-sans text-lg sm:text-xl font-light text-atelier-noir leading-relaxed">
-              {manifesto.lead}
+          {/* Text Paragraphs */}
+          <div ref={textColsRef} className="lg:col-span-7 space-y-6 text-sm sm:text-base text-atelier-stone leading-relaxed font-sans">
+            <p className="first-letter:font-serif first-letter:text-4xl first-letter:float-left first-letter:mr-3 first-letter:text-atelier-noir first-letter:leading-none">
+              {manifestoData.paragraph1}
             </p>
-
-            <div className="space-y-6 font-sans text-sm sm:text-base text-atelier-stone leading-relaxed border-l-2 border-atelier-sand/60 pl-6">
-              {manifesto.body.map((paragraph, index) => (
-                <p key={index}>{paragraph}</p>
-              ))}
-            </div>
-
-            {/* Blockquote */}
-            <div className="pt-8">
-              <blockquote className="font-serif italic text-xl sm:text-2xl text-atelier-noir/90 leading-snug mb-3">
-                {manifesto.quote}
-              </blockquote>
-              <cite className="block text-xs uppercase tracking-widest text-atelier-stone font-sans not-italic">
-                — {manifesto.author}
-              </cite>
-            </div>
+            <p>{manifestoData.paragraph2}</p>
+            <p className="italic text-atelier-noir font-serif text-base sm:text-lg pt-2 border-t border-atelier-border/60">
+              &ldquo;{manifestoData.quote}&rdquo;
+            </p>
           </div>
 
-          {/* Right Column: Tactile Weave Close-up Card */}
-          <div className="lg:col-span-5 relative mt-4 lg:mt-0">
+          {/* Editorial Image Accent */}
+          <div className="lg:col-span-5 relative">
             <div
               ref={photoCardRef}
-              className="relative w-full h-[440px] sm:h-[500px] rounded-xl overflow-hidden shadow-xl bg-atelier-sand/20"
+              className="relative w-full aspect-[4/5] rounded-2xl overflow-hidden shadow-xl bg-atelier-sand/20 border border-atelier-border/60"
             >
               <Image
-                src="/images/texture-weave.jpg"
-                alt="Detalhe macro de malha de lã merino mostrando a textura de ponto arroz"
+                src={manifestoData.image.src}
+                alt={manifestoData.image.alt}
                 fill
                 sizes="(max-width: 1024px) 100vw, 40vw"
-                className="object-cover filter contrast-[1.05] saturate-[0.9]"
+                className="object-cover object-center filter saturate-[0.95]"
+                style={{ objectPosition: manifestoData.image.objectPosition || 'center' }}
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-atelier-noir/50 via-transparent to-transparent pointer-events-none" />
-
-              <div className="absolute bottom-6 left-6 right-6 text-atelier-bg text-xs">
-                <span className="block uppercase tracking-widest font-sans text-[10px] text-atelier-sand mb-1">
-                  Estudo de Trama
-                </span>
-                <p className="font-serif text-sm">
-                  Lã merino 19.5µ em ponto semente duplo. O respiro entre os pontos cria um microclima
-                  térmico sobre o corpo.
-                </p>
+              <div className="absolute inset-0 bg-gradient-to-t from-atelier-noir/30 via-transparent to-transparent pointer-events-none" />
+              <div className="absolute bottom-4 left-4 right-4 p-3 bg-atelier-bg/85 backdrop-blur-md rounded-xl text-[11px] font-sans text-atelier-noir">
+                <span className="font-medium block">{manifestoData.imageCaption}</span>
+                <span className="text-atelier-stone text-[10px]">{manifestoData.imageSubcaption}</span>
               </div>
             </div>
           </div>
