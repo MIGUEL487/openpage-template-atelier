@@ -4,331 +4,260 @@ import { useEffect, useRef } from 'react';
 import Image from 'next/image';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { ArrowDown, ArrowUpRight } from 'lucide-react';
-import HeroFabricDrape from '@/components/HeroFabricDrape';
-import ErrorBoundary from '@/components/ErrorBoundary';
 import { siteConfig } from '@/config/site';
 import { useLenis } from '@/components/SmoothScroll';
 
-export default function Hero() {
+interface HeroProps {
+  mode?: 'mosaic' | 'single';
+}
+
+export default function Hero({ mode = 'mosaic' }: HeroProps) {
   const sectionRef = useRef<HTMLElement>(null);
-  const contentWrapperRef = useRef<HTMLDivElement>(null);
   const titleLine1Ref = useRef<HTMLSpanElement>(null);
   const titleLine2Ref = useRef<HTMLSpanElement>(null);
-  const subtitleRef = useRef<HTMLParagraphElement>(null);
+  const kickerLineRef = useRef<HTMLSpanElement>(null);
+  const paragraphRef = useRef<HTMLParagraphElement>(null);
   const ctaRef = useRef<HTMLDivElement>(null);
   const mosaicCol1Ref = useRef<HTMLDivElement>(null);
   const mosaicCol2Ref = useRef<HTMLDivElement>(null);
   const mosaicCol3Ref = useRef<HTMLDivElement>(null);
-  const mosaicCol4Ref = useRef<HTMLDivElement>(null);
-  const marqueeTrackRef = useRef<HTMLDivElement>(null);
-  const scrollIndicatorRef = useRef<HTMLDivElement>(null);
 
-  const { velocity } = useLenis();
+  const { scrollTo } = useLenis();
+  const brand = siteConfig.brandContent;
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
 
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReducedMotion) {
-      return;
-    }
+    if (prefersReducedMotion) return;
 
     const ctx = gsap.context(() => {
-      // 1. Timeline de Entrada (Reveal por Máscara e Stagger)
+      // 1. Reveal da Linha do Kicker
+      if (kickerLineRef.current) {
+        gsap.fromTo(
+          kickerLineRef.current,
+          { scaleX: 0, opacity: 0 },
+          { scaleX: 1, opacity: 1, duration: 1, ease: 'power3.out', delay: 0.1 }
+        );
+      }
+
+      // 2. Timeline de Revelação Editorial do Título com Máscara
       const tl = gsap.timeline({
         defaults: { ease: 'power3.out' },
       });
 
-      // Título revelado por linhas
       tl.fromTo(
         [titleLine1Ref.current, titleLine2Ref.current],
-        { yPercent: 115, opacity: 0 },
-        { yPercent: 0, opacity: 1, duration: 1.2, stagger: 0.15 },
-        0.2
+        { yPercent: 110, opacity: 0 },
+        { yPercent: 0, opacity: 1, duration: 1.1, stagger: 0.14 },
+        0.25
       );
 
-      // Subtítulo e CTAs
       tl.fromTo(
-        subtitleRef.current,
-        { y: 20, opacity: 0 },
+        paragraphRef.current,
+        { y: 24, opacity: 0 },
         { y: 0, opacity: 1, duration: 0.9 },
-        0.5
+        0.55
       );
 
       tl.fromTo(
         ctaRef.current,
-        { y: 16, opacity: 0 },
+        { y: 18, opacity: 0 },
         { y: 0, opacity: 1, duration: 0.8 },
-        0.7
+        0.75
       );
 
-      // Entrada das colunas do mosaico com clip escalonado
-      const columns = [
-        mosaicCol1Ref.current,
-        mosaicCol2Ref.current,
-        mosaicCol3Ref.current,
-        mosaicCol4Ref.current,
-      ].filter(Boolean);
-
-      tl.fromTo(
-        columns,
-        {
-          clipPath: 'inset(100% 0% 0% 0%)',
-          scale: 1.05,
-          opacity: 0,
-        },
-        {
-          clipPath: 'inset(0% 0% 0% 0%)',
-          scale: 1,
-          opacity: 1,
-          duration: 1.3,
-          stagger: 0.12,
-          ease: 'power3.inOut',
-        },
-        0.4
-      );
-
-      tl.fromTo(
-        scrollIndicatorRef.current,
-        { opacity: 0 },
-        { opacity: 1, duration: 1.0 },
-        1.1
-      );
-
-      // 2. Parallax em Sentidos Opostos nas Colunas do Mosaico (Seção 5.3 item 2)
-      // Colunas 1 e 3 descem ligeiramente, Colunas 2 e 4 sobem suavemente
-      if (mosaicCol1Ref.current && mosaicCol3Ref.current) {
-        gsap.to([mosaicCol1Ref.current, mosaicCol3Ref.current], {
-          yPercent: 12,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: 'top top',
-            end: 'bottom top',
-            scrub: 1.2,
-            invalidateOnRefresh: true,
+      // 3. Revelação das Colunas de Fotos (Clip-path Inset)
+      const cols = [mosaicCol1Ref.current, mosaicCol2Ref.current, mosaicCol3Ref.current].filter(Boolean);
+      if (cols.length > 0) {
+        tl.fromTo(
+          cols,
+          {
+            clipPath: 'inset(100% 0% 0% 0%)',
+            scale: 1.05,
+            opacity: 0,
           },
-        });
-      }
-
-      if (mosaicCol2Ref.current && mosaicCol4Ref.current) {
-        gsap.to([mosaicCol2Ref.current, mosaicCol4Ref.current], {
-          yPercent: -12,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: 'top top',
-            end: 'bottom top',
-            scrub: 1.2,
-            invalidateOnRefresh: true,
+          {
+            clipPath: 'inset(0% 0% 0% 0%)',
+            scale: 1,
+            opacity: 1,
+            duration: 1.2,
+            stagger: 0.12,
+            ease: 'power3.inOut',
           },
-        });
-      }
+          0.35
+        );
 
-      // 3. Efeito de Scroll no Wrapper Pai de Texto (sem conflito com a entrada)
-      gsap.fromTo(
-        contentWrapperRef.current,
-        { y: 0, opacity: 1 },
-        {
-          y: -40,
-          opacity: 0.2,
-          ease: 'none',
-          immediateRender: false,
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: 'center top',
-            end: 'bottom top',
-            scrub: true,
-            invalidateOnRefresh: true,
-          },
+        // 4. Parallax Suave e Contido nas Colunas ao Rolar
+        if (mosaicCol1Ref.current) {
+          gsap.to(mosaicCol1Ref.current, {
+            y: -28,
+            ease: 'none',
+            scrollTrigger: {
+              trigger: sectionRef.current,
+              start: 'top top',
+              end: 'bottom top',
+              scrub: 1.2,
+            },
+          });
         }
-      );
+        if (mosaicCol2Ref.current) {
+          gsap.to(mosaicCol2Ref.current, {
+            y: 22,
+            ease: 'none',
+            scrollTrigger: {
+              trigger: sectionRef.current,
+              start: 'top top',
+              end: 'bottom top',
+              scrub: 1.2,
+            },
+          });
+        }
+        if (mosaicCol3Ref.current) {
+          gsap.to(mosaicCol3Ref.current, {
+            y: -20,
+            ease: 'none',
+            scrollTrigger: {
+              trigger: sectionRef.current,
+              start: 'top top',
+              end: 'bottom top',
+              scrub: 1.2,
+            },
+          });
+        }
+      }
     }, sectionRef);
 
     return () => ctx.revert();
-  }, []);
+  }, [mode]);
 
-  // 4. Velocidade do Marquee reagindo ao Lenis Velocity
-  useEffect(() => {
-    if (!marqueeTrackRef.current) return;
-    const boost = Math.abs(velocity || 0) * 0.08;
-    const baseSpeed = 25; // segundos por ciclo
-    const dynamicSpeed = Math.max(10, baseSpeed - boost);
-    marqueeTrackRef.current.style.animationDuration = `${dynamicSpeed}s`;
-  }, [velocity]);
+  const handleCtaClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    scrollTo('#colecao', { offset: -80, duration: 1.2 });
+  };
 
-  const heroData = siteConfig.brandContent.hero;
-  const mosaic = heroData.mosaicImages || [
-    heroData.image,
-    heroData.image,
-    heroData.image,
-    heroData.image,
-  ];
+  const mosaicImages = brand.hero.mosaicImages || [];
+  const img1 = mosaicImages[0] || brand.hero.image;
+  const img2 = mosaicImages[1] || brand.hero.image;
+  const img3 = mosaicImages[2] || brand.hero.image;
 
   return (
     <section
       ref={sectionRef}
-      className="relative min-h-[100svh] w-full flex flex-col justify-between pt-24 sm:pt-28 pb-6 px-6 lg:px-12 bg-bg-base overflow-hidden border-b border-line"
+      id="hero"
+      className="relative w-full min-h-[85vh] lg:min-h-[92vh] flex items-center bg-bg-base overflow-hidden pt-[74px]"
     >
-      {/* 3D Atmospheric Background Layer (Drapeado dourado escuro suave) */}
-      <ErrorBoundary>
-        <HeroFabricDrape />
-      </ErrorBoundary>
-
-      {/* Main Grid Content */}
-      <div className="relative z-10 w-full max-w-7xl mx-auto my-auto grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
-        {/* Left: Typography & Storytelling (wrapper independente) */}
-        <div
-          ref={contentWrapperRef}
-          className="lg:col-span-6 flex flex-col justify-center space-y-6 sm:space-y-8"
-        >
-          {/* Kicker Dourado */}
-          <div className="flex items-center space-x-3 text-xs uppercase tracking-ultra text-gold font-sans font-medium">
-            <span className="w-8 h-[1px] bg-gold" />
-            <span>{heroData.kicker}</span>
+      {/* Container Principal */}
+      <div className="relative w-full max-w-[1360px] mx-auto px-6 md:px-12 py-12 md:py-16 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center z-10">
+        
+        {/* Bloco de Texto à Esquerda (~45% / 5 colunas desktop) */}
+        <div className="lg:col-span-5 flex flex-col justify-center z-20">
+          
+          {/* Kicker com Linha Fina Dourada */}
+          <div className="flex items-center gap-4 mb-6">
+            <span className="text-[11px] font-sans uppercase tracking-[0.26em] text-gold-light">
+              Alta Malharia · Monte Sião
+            </span>
+            <span
+              ref={kickerLineRef}
+              className="inline-block w-14 h-[1px] bg-gold-deep origin-left"
+            />
           </div>
 
-          {/* Editorial Display Heading */}
-          <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl lg:text-[4.2rem] font-normal leading-[1.08] tracking-tight text-ivory">
-            <span className="block overflow-hidden py-1">
-              <span ref={titleLine1Ref} className="inline-block will-change-transform">
-                {heroData.headlineLine1}
+          {/* Título Gigante em 2 Linhas com Máscara de Revelação */}
+          <h1 className="font-serif font-light text-ivory tracking-tight text-[44px] sm:text-[56px] md:text-[68px] lg:text-[76px] xl:text-[84px] leading-[0.98] mb-6">
+            <span className="block overflow-hidden">
+              <span ref={titleLine1Ref} className="block motion-ready">
+                Peças para viver
               </span>
             </span>
-            <span className="block overflow-hidden py-1">
-              <span
-                ref={titleLine2Ref}
-                className="inline-block italic font-light text-gold-light will-change-transform"
-              >
-                {heroData.headlineLine2}
+            <span className="block overflow-hidden">
+              <span ref={titleLine2Ref} className="block italic text-gold-light motion-ready">
+                bem vestida.
               </span>
             </span>
           </h1>
 
-          {/* Subtitle */}
+          {/* Parágrafo Descritivo em Serifada Elegante */}
           <p
-            ref={subtitleRef}
-            className="font-sans text-sm sm:text-base text-stone max-w-xl leading-relaxed font-light"
+            ref={paragraphRef}
+            className="font-serif italic text-ivory/80 text-[17px] md:text-[19px] leading-relaxed max-w-md mb-8 motion-ready"
           >
-            {heroData.description}
+            Moda feminina e tricô para o dia a dia e para as ocasiões, com conforto e presença singular.
+            Conheça a produção autoral de Monte Sião.
           </p>
 
-          {/* CTAs Primário Dourado & Secundário Contorno */}
-          <div
-            ref={ctaRef}
-            className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 pt-2"
-          >
+          {/* CTA Botão Retangular com Cantos Retos e Borda Fina */}
+          <div ref={ctaRef} className="flex items-center gap-4 motion-ready">
             <a
               href="#colecao"
-              className="inline-flex items-center justify-center px-8 py-4 bg-gold text-bg-base font-semibold text-xs uppercase tracking-widest hover:bg-gold-light transition-all duration-300 shadow-lg shadow-gold/10 group"
+              onClick={handleCtaClick}
+              className="btn-thread-dark group cursor-pointer"
             >
-              <span>Explorar Peças</span>
-              <ArrowUpRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 text-bg-base" />
-            </a>
-
-            <a
-              href="#catalogo"
-              className="inline-flex items-center justify-center px-8 py-4 bg-bg-raised/80 backdrop-blur-sm text-gold border border-gold/40 text-xs uppercase tracking-widest hover:border-gold hover:text-gold-light hover:bg-bg-soft transition-all duration-300"
-            >
-              <span>Catálogo & Fio</span>
+              <span>Ver a Coleção</span>
+              <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
             </a>
           </div>
         </div>
 
-        {/* Right: Mosaico Fotográfico em Colunas com Parallax Oposto (Seção 4) */}
-        <div className="lg:col-span-6 relative grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-3.5 items-center max-h-[580px] overflow-hidden py-4">
-          {/* Coluna 1 */}
-          <div
-            ref={mosaicCol1Ref}
-            className="relative aspect-[3/5] sm:aspect-[3/6] rounded-lg overflow-hidden border border-line bg-bg-raised shadow-xl will-change-transform"
-          >
-            <Image
-              src={mosaic[0].src}
-              alt={mosaic[0].alt}
-              fill
-              priority
-              sizes="(max-width: 768px) 50vw, 25vw"
-              className="object-cover object-top filter contrast-[1.03] saturate-[0.96]"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-bg-base/80 via-transparent to-transparent pointer-events-none" />
-          </div>
+        {/* Bloco Fotográfico à Direita (~55% / 7 colunas desktop) */}
+        <div className="lg:col-span-7 relative h-[440px] sm:h-[520px] md:h-[600px] lg:h-[680px] w-full flex items-center justify-end">
+          
+          {/* Gradiente de Fusão Suave no Fundo à Esquerda */}
+          <div className="absolute inset-y-0 left-0 w-32 md:w-48 bg-gradient-to-r from-bg-base via-bg-base/80 to-transparent z-10 pointer-events-none" />
 
-          {/* Coluna 2 */}
-          <div
-            ref={mosaicCol2Ref}
-            className="relative aspect-[3/5] sm:aspect-[3/6] rounded-lg overflow-hidden border border-line bg-bg-raised shadow-xl -mt-6 sm:-mt-8 will-change-transform"
-          >
-            <Image
-              src={mosaic[1].src}
-              alt={mosaic[1].alt}
-              fill
-              priority
-              sizes="(max-width: 768px) 50vw, 25vw"
-              className="object-cover object-top filter contrast-[1.03] saturate-[0.96]"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-bg-base/80 via-transparent to-transparent pointer-events-none" />
-          </div>
+          {/* Painel de 3 Colunas de Fotos Verticais (Mosaico da Referência) */}
+          <div className="relative w-full h-full grid grid-cols-3 gap-2 md:gap-3">
+            
+            {/* Coluna 1 */}
+            <div
+              ref={mosaicCol1Ref}
+              className="relative h-full w-full overflow-hidden border border-line/40 bg-bg-raised motion-ready"
+            >
+              <Image
+                src={img1.src}
+                alt={img1.alt}
+                fill
+                priority
+                sizes="(max-width: 768px) 33vw, 240px"
+                className="object-cover object-center transition-transform duration-700 ease-out hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-bg-base/60 via-transparent to-transparent pointer-events-none" />
+            </div>
 
-          {/* Coluna 3 */}
-          <div
-            ref={mosaicCol3Ref}
-            className="relative aspect-[3/5] sm:aspect-[3/6] rounded-lg overflow-hidden border border-line bg-bg-raised shadow-xl will-change-transform hidden sm:block"
-          >
-            <Image
-              src={mosaic[2].src}
-              alt={mosaic[2].alt}
-              fill
-              sizes="25vw"
-              className="object-cover object-top filter contrast-[1.03] saturate-[0.96]"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-bg-base/80 via-transparent to-transparent pointer-events-none" />
-          </div>
+            {/* Coluna 2 */}
+            <div
+              ref={mosaicCol2Ref}
+              className="relative h-full w-full overflow-hidden border border-line/40 bg-bg-raised mt-4 md:mt-6 motion-ready"
+            >
+              <Image
+                src={img2.src}
+                alt={img2.alt}
+                fill
+                priority
+                sizes="(max-width: 768px) 33vw, 240px"
+                className="object-cover object-center transition-transform duration-700 ease-out hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-bg-base/60 via-transparent to-transparent pointer-events-none" />
+            </div>
 
-          {/* Coluna 4 */}
-          <div
-            ref={mosaicCol4Ref}
-            className="relative aspect-[3/5] sm:aspect-[3/6] rounded-lg overflow-hidden border border-line bg-bg-raised shadow-xl -mt-6 sm:-mt-8 will-change-transform hidden sm:block"
-          >
-            <Image
-              src={mosaic[3].src}
-              alt={mosaic[3].alt}
-              fill
-              sizes="25vw"
-              className="object-cover object-top filter contrast-[1.03] saturate-[0.96]"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-bg-base/80 via-transparent to-transparent pointer-events-none" />
+            {/* Coluna 3 */}
+            <div
+              ref={mosaicCol3Ref}
+              className="relative h-full w-full overflow-hidden border border-line/40 bg-bg-raised motion-ready"
+            >
+              <Image
+                src={img3.src}
+                alt={img3.alt}
+                fill
+                priority
+                sizes="(max-width: 768px) 33vw, 240px"
+                className="object-cover object-center transition-transform duration-700 ease-out hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-bg-base/60 via-transparent to-transparent pointer-events-none" />
+            </div>
           </div>
         </div>
-      </div>
-
-      {/* Marquee Têxtil Dourado com Reatividade ao Scroll */}
-      <div className="relative z-10 w-full overflow-hidden border-y border-line py-2.5 my-4 bg-bg-raised/40">
-        <div
-          ref={marqueeTrackRef}
-          className="flex whitespace-nowrap animate-marquee font-sans text-[11px] uppercase tracking-[0.25em] text-gold-deep"
-        >
-          <span className="mx-4">{heroData.marqueeText || 'PRECIOZA TRICOT — MONTE SIÃO — '}</span>
-          <span className="mx-4">{heroData.marqueeText || 'PRECIOZA TRICOT — MONTE SIÃO — '}</span>
-          <span className="mx-4">{heroData.marqueeText || 'PRECIOZA TRICOT — MONTE SIÃO — '}</span>
-          <span className="mx-4">{heroData.marqueeText || 'PRECIOZA TRICOT — MONTE SIÃO — '}</span>
-        </div>
-      </div>
-
-      {/* Bottom Scroll Indicator & Origins */}
-      <div
-        ref={scrollIndicatorRef}
-        className="relative z-10 w-full max-w-7xl mx-auto flex items-center justify-between pt-2 text-[11px] uppercase tracking-ultra text-stone font-sans"
-      >
-        <span className="hidden sm:inline">{heroData.bottomBarLeft}</span>
-        <a
-          href="#manifesto"
-          className="flex items-center space-x-2 text-gold-light hover:text-ivory transition-colors mx-auto sm:mx-0 group"
-        >
-          <span>Conhecer a Marca</span>
-          <ArrowDown className="w-3.5 h-3.5 animate-bounce group-hover:translate-y-0.5 text-gold" />
-        </a>
-        <span className="hidden sm:inline">{heroData.bottomBarRight}</span>
       </div>
     </section>
   );

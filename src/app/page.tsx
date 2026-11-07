@@ -4,25 +4,15 @@ import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
-import Manifesto from '@/components/Manifesto';
-import FeaturedCollection from '@/components/FeaturedCollection';
-import Lookbook from '@/components/Lookbook';
+import CollectionSection from '@/components/CollectionSection';
+import ApproachSection from '@/components/ApproachSection';
+import HighlightsSection from '@/components/HighlightsSection';
+import LookbookSection from '@/components/LookbookSection';
 import ProductCatalog from '@/components/ProductCatalog';
-import AtelierStory from '@/components/AtelierStory';
-import WhatsAppSection from '@/components/WhatsAppSection';
+import StoreVisitSection from '@/components/StoreVisitSection';
+import InstagramStrip from '@/components/InstagramStrip';
 import Footer from '@/components/Footer';
-import ErrorBoundary from '@/components/ErrorBoundary';
 import { Product } from '@/types';
-
-// Otimização de bundle inicial: carregamento dinâmico para componentes pesados
-const FabricScene = dynamic(() => import('@/components/FabricScene'), {
-  ssr: false,
-  loading: () => (
-    <div className="w-full h-[550px] bg-bg-raised flex items-center justify-center">
-      <div className="w-8 h-8 rounded-full border-2 border-gold/20 border-t-gold animate-spin" />
-    </div>
-  ),
-});
 
 const ProductModal = dynamic(() => import('@/components/ProductModal'), {
   ssr: false,
@@ -33,39 +23,39 @@ export default function Home() {
 
   return (
     <main className="relative min-h-screen w-full flex flex-col bg-bg-base text-ivory">
-      {/* 0. Navegação Fixa com Logo Script Dourado e Barra de Leitura */}
+      {/* 4.0 Navbar com Logo Script Dourado, Busca e Barra de Leitura */}
       <Navbar />
 
-      {/* 1. Hero Cinematográfico com Mosaico Fotográfico, Parallax Oposto e Marquee */}
+      {/* 4.1 Hero (80-90vh) com Mosaico Fotográfico de 3 Colunas e Título em 2 Linhas */}
       <Hero />
 
-      {/* 2. Manifesto da Marca & Dual Photography da Loja */}
-      <Manifesto />
+      {/* 4.2 A Coleção (Fundo Marfim) — 4 Tiles com Legendas em Caixa-Alta + Itálico */}
+      <CollectionSection onSelectCategory={(cat) => {
+        window.dispatchEvent(new CustomEvent('precioza-filter-category', { detail: cat }));
+      }} />
 
-      {/* 3. Destaques da Coleção com Pin Horizontal no Desktop */}
-      <FeaturedCollection onSelectProduct={(product) => setSelectedProduct(product)} />
+      {/* 4.3 Abordagem / A Loja (Bloco Dividido) — Texto #141311 à Esquerda, 2 Fotos à Direita */}
+      <ApproachSection />
 
-      {/* 4. Textura & Malharia: Colagem de Peças e Drapeado 3D Atmosférico */}
-      <ErrorBoundary>
-        <FabricScene />
-      </ErrorBoundary>
+      {/* 5.4 Destaques (Fundo Preto) — 4 Peças com Pin Horizontal no Desktop */}
+      <HighlightsSection onSelectProduct={(product) => setSelectedProduct(product)} />
 
-      {/* 5. Caderno Visual · Lookbook com Numeração Dourada */}
-      <Lookbook />
+      {/* 5.5 Lookbook (Fundo Marfim) — 4 Entradas Alternadas com Numeração Dourada 01-04 */}
+      <LookbookSection />
 
-      {/* 6. Catálogo com Filtros Suaves via GSAP Flip */}
+      {/* 5.6 Catálogo Completo (Fundo #141311) — Abas de Texto, 15 Peças, Busca e Modal */}
       <ProductCatalog onSelectProduct={(product) => setSelectedProduct(product)} />
 
-      {/* 7. Boutique em Monte Sião & Ritual do Cuidado */}
-      <AtelierStory />
+      {/* 5.7 Visite a Loja (Fundo Preto) — Split Invertido, Endereço Oficial e Google Maps */}
+      <StoreVisitSection />
 
-      {/* 8. Atendimento Exclusivo via WhatsApp Direto */}
-      <WhatsAppSection />
+      {/* 5.8 Faixa Instagram (Fundo Marfim) — 6 Fotos Quadradas @preciozastore */}
+      <InstagramStrip />
 
-      {/* 9. Rodapé Editorial com Script Dourado */}
+      {/* 5.9 Rodapé (Fundo Preto) — Logo Script Dourado, Links e Créditos */}
       <Footer />
 
-      {/* Modal Interativo com Animação GSAP e Abertura do WhatsApp da Loja */}
+      {/* Modal de Detalhes da Peça com Integração Direta ao WhatsApp Oficial */}
       <ProductModal
         product={selectedProduct}
         onClose={() => setSelectedProduct(null)}

@@ -27,7 +27,6 @@ function ProductModalDialog({ product, onClose }: { product: Product; onClose: (
     product.availableSizes[0] || 'U'
   );
 
-  // Mensagem contextual gerada para o WhatsApp da loja
   const contextualMessage = siteConfig.whatsapp.generateProductMessage(
     product.name,
     selectedColor.name,
@@ -35,7 +34,6 @@ function ProductModalDialog({ product, onClose }: { product: Product; onClose: (
     product.id
   );
 
-  // Animação de entrada e saída com GSAP (Seção 5.3 item 7)
   const handleClose = () => {
     if (modalContainerRef.current && backdropRef.current) {
       gsap.to(modalContainerRef.current, {
@@ -62,13 +60,12 @@ function ProductModalDialog({ product, onClose }: { product: Product; onClose: (
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
 
-    // Animação de entrada suave com GSAP
     if (backdropRef.current && modalContainerRef.current) {
-      gsap.fromTo(backdropRef.current, { opacity: 0 }, { opacity: 1, duration: 0.35, ease: 'power2.out' });
+      gsap.fromTo(backdropRef.current, { opacity: 0 }, { opacity: 1, duration: 0.3, ease: 'power2.out' });
       gsap.fromTo(
         modalContainerRef.current,
-        { y: 30, opacity: 0, scale: 0.97 },
-        { y: 0, opacity: 1, scale: 1, duration: 0.45, ease: 'power3.out' }
+        { y: 30, opacity: 0, scale: 0.98 },
+        { y: 0, opacity: 1, scale: 1, duration: 0.4, ease: 'power3.out' }
       );
     }
 
@@ -81,7 +78,6 @@ function ProductModalDialog({ product, onClose }: { product: Product; onClose: (
         return;
       }
 
-      // Trap de foco
       if (e.key === 'Tab' && modalContainerRef.current) {
         const focusables = modalContainerRef.current.querySelectorAll<HTMLElement>(
           'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
@@ -106,11 +102,12 @@ function ProductModalDialog({ product, onClose }: { product: Product; onClose: (
       window.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = originalOverflow;
       startLenis();
-      previousActiveElementRef.current?.focus();
+      if (previousActiveElementRef.current) {
+        previousActiveElementRef.current.focus();
+      }
     };
-  }, [stopLenis, startLenis]);
+  }, []);
 
-  // Ação WhatsApp Real (Regra 3: isDemo: false, abre wa.me diretamente)
   const handleWhatsAppConsultation = () => {
     const url = siteConfig.whatsapp.getWhatsAppUrl(contextualMessage);
     window.open(url, '_blank', 'noopener,noreferrer');
@@ -118,112 +115,109 @@ function ProductModalDialog({ product, onClose }: { product: Product; onClose: (
 
   return (
     <div
-      ref={backdropRef}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-bg-base/85 backdrop-blur-md overflow-y-auto"
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-product-title"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) {
-          handleClose();
-        }
-      }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 md:p-8"
     >
+      {/* Backdrop */}
+      <div
+        ref={backdropRef}
+        onClick={handleClose}
+        className="fixed inset-0 bg-bg-base/85 backdrop-blur-sm"
+        aria-hidden="true"
+      />
+
+      {/* Modal Box com Cantos Retos e Borda Fina de 1px */}
       <div
         ref={modalContainerRef}
         data-lenis-prevent
-        className="relative w-full max-w-4xl bg-bg-soft rounded-2xl shadow-2xl border border-line overflow-hidden my-8"
+        className="relative w-full max-w-4xl bg-bg-soft border border-line text-ivory z-10 max-h-[90vh] overflow-y-auto"
       >
-        {/* Close Button */}
+        {/* Botão Fechar Reto */}
         <button
           ref={closeButtonRef}
           onClick={handleClose}
-          className="absolute top-4 right-4 z-20 p-2.5 rounded-full bg-bg-base/80 text-ivory hover:text-gold hover:bg-bg-raised transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-gold"
+          className="absolute top-4 right-4 z-20 p-2 border border-line bg-bg-base text-ivory hover:text-gold hover:border-gold transition-colors focus:outline-none focus:ring-1 focus:ring-gold"
           aria-label="Fechar detalhes da peça"
         >
-          <X className="w-5 h-5" />
+          <X className="w-5 h-5 stroke-[1.5]" />
         </button>
 
-        <div className="grid grid-cols-1 md:grid-cols-12 max-h-[85vh] overflow-y-auto">
-          {/* Left: Product Image */}
-          <div className="md:col-span-5 relative min-h-[340px] md:min-h-full bg-bg-base">
+        <div className="grid grid-cols-1 md:grid-cols-12 min-h-[460px]">
+          {/* Imagem do Produto Sem Borda e Cantos Retos */}
+          <div className="md:col-span-5 relative min-h-[360px] md:min-h-full bg-bg-raised border-b md:border-b-0 md:border-r border-line">
             <Image
               src={product.image}
               alt={product.name}
               fill
-              sizes="(max-width: 768px) 100vw, 42vw"
+              sizes="(max-width: 768px) 100vw, 400px"
               className="object-cover object-center filter contrast-[1.03] saturate-[0.96]"
               style={{ objectPosition: product.objectPosition || 'center 20%' }}
             />
-            <div className="absolute top-4 left-4 bg-bg-base/80 backdrop-blur-sm text-gold-light text-[10px] uppercase tracking-widest px-3 py-1 rounded border border-line">
+            <div className="absolute top-4 left-4 bg-bg-base/90 text-gold-light text-[10px] uppercase tracking-[0.24em] px-3 py-1 border border-line">
               {product.categoryLabel}
             </div>
           </div>
 
-          {/* Right: Specifications & Direct WhatsApp Action */}
-          <div className="md:col-span-7 p-6 sm:p-8 flex flex-col justify-between space-y-6">
+          {/* Especificações e Ação Direta para o WhatsApp */}
+          <div className="md:col-span-7 p-8 md:p-10 flex flex-col justify-between">
             <div>
-              {/* Product Header */}
-              <div className="flex items-baseline justify-between border-b border-line pb-4 mb-4 gap-4">
-                <div>
-                  <span className="text-[10px] uppercase tracking-ultra text-gold-deep font-sans block mb-1">
-                    Referência: {product.id}
-                  </span>
-                  <h3 id="modal-product-title" className="font-serif text-2xl sm:text-3xl text-ivory">
-                    {product.name}
-                  </h3>
-                </div>
-                <div className="text-right">
-                  <span className="font-sans text-xl font-medium text-gold block">
-                    {product.formattedPrice}
-                  </span>
-                  <span className="text-[10px] text-stone uppercase tracking-wider block">
-                    Preço sob consulta
-                  </span>
-                </div>
+              {/* Cabeçalho do Produto */}
+              <div className="border-b border-line pb-4 mb-6">
+                <span className="text-[10px] uppercase tracking-[0.26em] text-gold-deep font-sans block mb-1">
+                  Referência: {product.id}
+                </span>
+                <h3 id="modal-product-title" className="font-serif text-2xl sm:text-3xl text-ivory font-light">
+                  {product.name}
+                </h3>
+                <span className="font-serif italic text-sm text-stone block mt-1">
+                  {product.tagline}
+                </span>
               </div>
 
-              <p className="text-xs sm:text-sm text-stone leading-relaxed mb-6 font-light">
+              <p className="text-[13px] text-stone leading-relaxed mb-6 font-sans">
                 {product.description}
               </p>
 
-              {/* Composition & Gauge Badge */}
-              <div className="p-3.5 bg-bg-base rounded-xl border border-line space-y-1 mb-6 text-xs text-stone font-sans">
+              {/* Informações de Composição e Trama */}
+              <div className="p-4 bg-bg-base border border-line space-y-1.5 mb-6 text-xs text-stone font-sans">
                 <div>
                   <strong className="text-ivory font-medium">Composição:</strong> {product.composition}
                 </div>
                 <div>
                   <strong className="text-ivory font-medium">Acabamento / Trama:</strong> {product.gauge}
                 </div>
+                <div>
+                  <strong className="text-ivory font-medium">Origem:</strong> Malharia de Monte Sião - MG
+                </div>
               </div>
 
-              {/* Color Selector */}
+              {/* Seletor de Cores */}
               <div className="mb-6">
-                <div className="flex items-center justify-between mb-2.5">
-                  <span className="text-xs font-sans uppercase tracking-widest text-stone">
-                    Tonalidade Selecionada:
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[11px] font-sans uppercase tracking-[0.22em] text-stone">
+                    Tonalidade:
                   </span>
-                  <span className="text-xs font-sans font-medium text-gold-light">
+                  <span className="text-[11px] font-sans text-gold-light">
                     {selectedColor.name}
                   </span>
                 </div>
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center gap-3">
                   {product.colors.map((color) => {
                     const isSelected = selectedColor.name === color.name;
                     return (
                       <button
                         key={color.name}
                         onClick={() => setSelectedColor(color)}
-                        className={`group relative p-1 rounded-full border transition-all ${
-                          isSelected
-                            ? 'border-gold scale-110 shadow-sm'
-                            : 'border-line hover:border-gold/40'
+                        className={`p-1 border transition-all ${
+                          isSelected ? 'border-gold' : 'border-line hover:border-stone'
                         }`}
                         title={color.name}
                         aria-label={`Selecionar cor ${color.name}`}
                       >
                         <span
-                          className="block w-6 h-6 rounded-full border border-black/30"
+                          className="block w-6 h-6 border border-black/40"
                           style={{ backgroundColor: color.hex }}
                         />
                       </button>
@@ -232,13 +226,13 @@ function ProductModalDialog({ product, onClose }: { product: Product; onClose: (
                 </div>
               </div>
 
-              {/* Size Selector */}
+              {/* Seletor de Tamanhos com Cantos Retos */}
               <div className="mb-6">
-                <div className="flex items-center justify-between mb-2.5">
-                  <span className="text-xs font-sans uppercase tracking-widest text-stone">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[11px] font-sans uppercase tracking-[0.22em] text-stone">
                     Tamanho Disponível:
                   </span>
-                  <span className="text-xs font-sans text-stone">
+                  <span className="text-[11px] font-sans text-stone">
                     {selectedSize === 'U' ? 'Tamanho Único' : `Tamanho ${selectedSize}`}
                   </span>
                 </div>
@@ -249,10 +243,10 @@ function ProductModalDialog({ product, onClose }: { product: Product; onClose: (
                       <button
                         key={size}
                         onClick={() => setSelectedSize(size)}
-                        className={`px-3.5 py-1.5 rounded-lg text-xs font-sans transition-all ${
+                        className={`px-4 py-2 text-xs font-sans transition-all border ${
                           isSelected
-                            ? 'bg-gold text-bg-base font-semibold shadow-md'
-                            : 'bg-bg-base text-stone hover:text-ivory border border-line'
+                            ? 'bg-gold text-bg-base border-gold font-medium'
+                            : 'bg-bg-base text-stone hover:text-ivory border-line'
                         }`}
                       >
                         {size === 'U' ? 'Único (U)' : size}
@@ -263,17 +257,18 @@ function ProductModalDialog({ product, onClose }: { product: Product; onClose: (
               </div>
             </div>
 
-            {/* Bottom Actions: WhatsApp Real Direct Action */}
-            <div className="space-y-3 pt-4 border-t border-line">
+            {/* Ação: Botão WhatsApp Retangular com Mensagem Contextual */}
+            <div className="space-y-3 pt-6 border-t border-line">
               <button
                 onClick={handleWhatsAppConsultation}
-                className="w-full flex items-center justify-center space-x-2 py-4 px-6 bg-gold text-bg-base font-semibold hover:bg-gold-light font-sans text-xs uppercase tracking-widest transition-all duration-200 shadow-xl group"
+                className="btn-thread-dark w-full !py-4 justify-center"
               >
-                <MessageCircle className="w-4 h-4 text-bg-base fill-bg-base" />
+                <MessageCircle className="w-4 h-4 text-gold" />
                 <span>Consultar Disponibilidade no WhatsApp</span>
+                <span>→</span>
               </button>
 
-              <p className="text-[11px] text-stone text-center font-sans">
+              <p className="text-[11px] text-stone text-center font-sans tracking-wide">
                 Atendimento direto com a consultoria da Precioza Tricot · Monte Sião - MG
               </p>
             </div>

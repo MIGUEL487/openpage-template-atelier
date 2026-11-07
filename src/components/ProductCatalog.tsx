@@ -6,7 +6,7 @@ import gsap from 'gsap';
 import { Flip } from 'gsap/Flip';
 import { siteConfig } from '@/config/site';
 import { Product } from '@/types';
-import { ArrowUpRight, SlidersHorizontal } from 'lucide-react';
+import { Search } from 'lucide-react';
 
 interface ProductCatalogProps {
   onSelectProduct: (product: Product) => void;
@@ -14,39 +14,67 @@ interface ProductCatalogProps {
 
 export default function ProductCatalog({ onSelectProduct }: ProductCatalogProps) {
   const [selectedCategory, setSelectedCategory] = useState<string>('todos');
+  const [searchFilter, setSearchFilter] = useState<string>('');
   const gridRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     gsap.registerPlugin(Flip);
+
+    const handleCategoryEvent = (e: CustomEvent<string>) => {
+      if (e.detail) {
+        setSelectedCategory(e.detail);
+      }
+    };
+
+    const handleSearchEvent = (e: CustomEvent<string>) => {
+      if (typeof e.detail === 'string') {
+        setSearchFilter(e.detail);
+      }
+    };
+
+    window.addEventListener('precioza-filter-category' as any, handleCategoryEvent);
+    window.addEventListener('precioza-filter-search' as any, handleSearchEvent);
+
+    return () => {
+      window.removeEventListener('precioza-filter-category' as any, handleCategoryEvent);
+      window.removeEventListener('precioza-filter-search' as any, handleSearchEvent);
+    };
   }, []);
 
   const catalogData = siteConfig.brandContent.catalog;
   const categories = siteConfig.brandContent.catalogCategories;
   const products = siteConfig.brandContent.products;
 
-  const filteredProducts =
-    selectedCategory === 'todos' || selectedCategory === 'all'
-      ? products
-      : products.filter((p) => p.category === selectedCategory);
+  const filteredProducts = products.filter((p) => {
+    const matchesCategory =
+      selectedCategory === 'todos' || selectedCategory === 'all' || p.category === selectedCategory;
+
+    const matchesSearch =
+      !searchFilter ||
+      p.name.toLowerCase().includes(searchFilter.toLowerCase()) ||
+      p.tagline.toLowerCase().includes(searchFilter.toLowerCase()) ||
+      p.categoryLabel.toLowerCase().includes(searchFilter.toLowerCase());
+
+    return matchesCategory && matchesSearch;
+  });
 
   const handleCategoryChange = (categoryKey: string) => {
     if (categoryKey === selectedCategory) return;
 
-    // Captura o estado dos cards antes da atualização do DOM com Flip (Seção 5.3 item 7)
     const state = Flip.getState('.catalog-card');
     setSelectedCategory(categoryKey);
 
     requestAnimationFrame(() => {
       Flip.from(state, {
-        duration: 0.6,
+        duration: 0.5,
         ease: 'power2.inOut',
-        stagger: 0.03,
+        stagger: 0.02,
         absolute: false,
         onEnter: (elements: any) =>
           gsap.fromTo(
             elements,
-            { opacity: 0, scale: 0.95 },
-            { opacity: 1, scale: 1, duration: 0.45, ease: 'power2.out' }
+            { opacity: 0, y: 15 },
+            { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' }
           ),
       });
     });
@@ -55,102 +83,135 @@ export default function ProductCatalog({ onSelectProduct }: ProductCatalogProps)
   return (
     <section
       id="catalogo"
-      className="relative w-full py-20 lg:py-28 px-6 lg:px-12 bg-bg-raised border-b border-line overflow-hidden"
+      className="relative w-full py-24 md:py-32 bg-bg-raised border-b border-line text-ivory"
     >
-      <div className="max-w-7xl mx-auto">
-        {/* Header da Seção */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
+      <div className="max-w-[1360px] mx-auto px-6 md:px-12">
+        {/* Cabeçalho do Catálogo */}
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-16">
           <div>
-            <div className="flex items-center space-x-3 text-xs uppercase tracking-ultra text-gold font-sans font-medium mb-3">
-              <span className="w-8 h-[1px] bg-gold" />
-              <span>{catalogData.kicker}</span>
+            <div className="flex items-center gap-4 mb-4">
+              <span className="text-[11px] font-sans uppercase tracking-[0.26em] text-gold-light">
+                {catalogData.kicker}
+              </span>
+              <span className="inline-block w-14 h-[1px] bg-gold-deep" />
             </div>
-            <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-normal text-ivory tracking-tight">
+            <h2 className="font-serif font-light text-ivory text-[36px] sm:text-[44px] md:text-[52px] leading-[1.04] tracking-tight">
               {catalogData.title}
             </h2>
-            <p className="font-sans text-sm sm:text-base text-stone max-w-xl mt-3 leading-relaxed font-light">
+            <p className="font-sans text-[13px] md:text-[14px] text-stone max-w-xl mt-3 leading-relaxed">
               {catalogData.description}
             </p>
           </div>
 
-          <div className="text-xs font-sans text-gold-deep uppercase tracking-widest flex items-center space-x-2">
-            <SlidersHorizontal className="w-3.5 h-3.5 text-gold" />
-            <span>Exibindo {filteredProducts.length} de {products.length} peças</span>
+          {/* Campo de Busca no Catálogo */}
+          <div className="relative w-full max-w-xs border-b border-line pb-1 flex items-center gap-2">
+            <Search className="w-4 h-4 text-stone stroke-[1.5]" />
+            <input
+              type="text"
+              value={searchFilter}
+              onChange={(e) => setSearchFilter(e.target.value)}
+              placeholder="Buscar peça ou tecido..."
+              className="w-full bg-transparent border-none text-xs text-ivory placeholder-stone focus:outline-none font-sans"
+            />
+            {searchFilter && (
+              <button
+                onClick={() => setSearchFilter('')}
+                className="text-stone hover:text-ivory text-xs px-1"
+                aria-label="Limpar filtro"
+              >
+                ✕
+              </button>
+            )}
           </div>
         </div>
 
-        {/* Filter Pills com Flip (Seção 5.3 item 7) */}
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-12 pb-4 border-b border-line">
+        {/* Abas de Filtros de Texto com Sublinhado Dourado (Sem Pills) */}
+        <div className="flex flex-wrap items-center gap-6 md:gap-10 mb-14 pb-4 border-b border-line">
           {categories.map((cat) => {
             const isActive = selectedCategory === cat.key;
             return (
               <button
                 key={cat.key}
                 onClick={() => handleCategoryChange(cat.key)}
-                className={`px-5 py-2.5 rounded-full text-xs uppercase tracking-wider font-sans transition-all duration-200 ${
-                  isActive
-                    ? 'bg-gold text-bg-base font-semibold shadow-md'
-                    : 'bg-bg-soft text-stone hover:text-ivory border border-line hover:border-gold/40'
+                className={`relative py-2 text-[11px] uppercase tracking-[0.24em] font-sans transition-colors duration-200 cursor-pointer ${
+                  isActive ? 'text-ivory font-medium' : 'text-stone hover:text-ivory'
                 }`}
-                aria-pressed={isActive}
               >
-                {cat.label}
+                <span>{cat.label}</span>
+                {isActive && (
+                  <span className="absolute bottom-[-17px] left-0 right-0 h-[2px] bg-gold" />
+                )}
               </button>
             );
           })}
         </div>
 
-        {/* Product Cards Grid */}
-        <div
-          ref={gridRef}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"
-        >
-          {filteredProducts.map((product) => (
-            <div
-              key={product.id}
-              onClick={() => onSelectProduct(product)}
-              className="catalog-card group cursor-pointer flex flex-col justify-between p-4 bg-bg-base rounded-xl border border-line hover:border-gold/60 transition-all duration-300 shadow-xl"
-            >
-              <div className="relative aspect-[3/4] w-full rounded-lg overflow-hidden bg-bg-soft mb-4">
-                <Image
-                  src={product.image}
-                  alt={product.name}
-                  fill
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  className="object-cover object-center transition-transform duration-700 ease-out group-hover:scale-[1.03] filter contrast-[1.03] saturate-[0.96]"
-                  style={{ objectPosition: product.objectPosition || 'center 20%' }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-bg-base/80 via-transparent to-transparent opacity-60 group-hover:opacity-30 transition-opacity" />
-
-                <div className="absolute top-3 left-3 text-[10px] uppercase tracking-widest px-2.5 py-1 bg-bg-base/80 backdrop-blur-md text-gold-light border border-line rounded">
-                  {product.categoryLabel}
-                </div>
-
-                <div className="absolute top-3 right-3 text-[10px] tracking-wider px-2 py-1 bg-bg-base/80 text-stone border border-line rounded">
-                  {product.formattedPrice}
-                </div>
-              </div>
-
-              <div className="flex flex-col space-y-2 px-1">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-serif text-xl text-ivory group-hover:text-gold-light transition-colors">
-                    {product.name}
-                  </h3>
-                  <ArrowUpRight className="w-4 h-4 text-stone group-hover:text-gold transition-colors" />
-                </div>
-                <p className="text-xs text-stone font-sans line-clamp-2 font-light">
-                  {product.tagline}
-                </p>
-
-                <div className="h-[1px] w-full bg-line group-hover:bg-gold/60 transition-colors mt-2" />
-                <div className="flex items-center justify-between text-[11px] text-gold-deep pt-1">
-                  <span>{product.gauge}</span>
-                  <span className="text-stone uppercase text-[10px] tracking-widest">Ver Detalhes</span>
-                </div>
-              </div>
-            </div>
-          ))}
+        {/* Contagem */}
+        <div className="text-[11px] font-sans uppercase tracking-[0.22em] text-stone mb-8">
+          Exibindo {filteredProducts.length} de {products.length} modelos
         </div>
+
+        {/* Grade de 4 Colunas de Cards Retos Sem Borda */}
+        {filteredProducts.length === 0 ? (
+          <div className="py-20 text-center text-stone font-sans text-sm">
+            Nenhuma peça encontrada para os filtros selecionados.
+          </div>
+        ) : (
+          <div
+            ref={gridRef}
+            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8"
+          >
+            {filteredProducts.map((product) => (
+              <div
+                key={product.id}
+                onClick={() => onSelectProduct(product)}
+                className="catalog-card flex flex-col group cursor-pointer"
+              >
+                {/* Imagem Proporção 3:4 com Cantos Retos */}
+                <div className="relative w-full aspect-[3/4] bg-bg-soft overflow-hidden">
+                  <Image
+                    src={product.image}
+                    alt={product.name}
+                    fill
+                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                    className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105"
+                    style={{ objectPosition: product.objectPosition || 'center 20%' }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-bg-base/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                </div>
+
+                {/* Informações da Peça */}
+                <div className="pt-4 flex flex-col flex-1 justify-between">
+                  <div>
+                    <span className="font-sans font-medium text-[11px] uppercase tracking-[0.22em] text-ivory group-hover:text-gold transition-colors block line-clamp-1">
+                      {product.name}
+                    </span>
+                    <span className="font-serif italic text-[14px] text-stone mt-1 block line-clamp-1">
+                      {product.tagline}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between mt-4 pt-3 border-t border-line/60">
+                    <span className="text-[12px] font-sans text-stone tracking-wide">
+                      Consulte
+                    </span>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onSelectProduct(product);
+                      }}
+                      className="btn-thread-dark !py-1 !px-3 text-[10px]"
+                    >
+                      <span>Ver Detalhes</span>
+                      <span>→</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import { siteConfig } from '@/config/site';
 import { useLenis } from '@/components/SmoothScroll';
-import { Instagram, MapPin } from 'lucide-react';
+import { Instagram, MapPin, MessageCircle } from 'lucide-react';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -12,76 +12,83 @@ export default function Footer() {
 
   const handleNavClick = (href: string, e: React.MouseEvent) => {
     e.preventDefault();
-    scrollTo(href, { offset: -80, duration: 1.4 });
+    scrollTo(href, { offset: -80, duration: 1.2 });
+  };
+
+  const handleWhatsApp = () => {
+    const url = siteConfig.whatsapp.getWhatsAppUrl(siteConfig.whatsapp.defaultMessage);
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   return (
-    <footer className="w-full bg-bg-base text-ivory border-t border-line pt-16 pb-12 px-6 lg:px-12">
-      <div className="max-w-7xl mx-auto">
-        {/* Main Footer Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-12 pb-12 border-b border-line items-start">
-          {/* Brand & Logo Column */}
-          <div className="md:col-span-5 space-y-5">
-            <div className="flex items-center space-x-4">
-              {brand.logo.avatarUrl && (
-                <div className="relative w-12 h-12 rounded-full overflow-hidden border border-gold/40 flex-shrink-0 bg-bg-soft">
-                  <Image
-                    src={brand.logo.avatarUrl}
-                    alt="Precioza Tricot"
-                    fill
-                    sizes="48px"
-                    className="object-cover"
-                  />
-                </div>
-              )}
-              <div className="relative h-10 w-36">
-                <Image
-                  src="/brands/precioza/processed/precioza-logo-script-dourado.webp"
-                  alt="Precioza"
-                  fill
-                  sizes="160px"
-                  className="object-contain object-left"
-                />
-              </div>
+    <footer className="w-full bg-bg-base text-ivory border-t border-line pt-20 pb-14 px-6 md:px-12">
+      <div className="max-w-[1360px] mx-auto">
+        {/* Grid Principal do Rodapé */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-12 pb-16 border-b border-line items-start">
+          
+          {/* Coluna da Marca e Logo Script Dourado (~5 colunas) */}
+          <div className="md:col-span-5 space-y-6">
+            <div className="relative h-12 w-48">
+              <Image
+                src={brand.logo.scriptUrl || '/brands/precioza/processed/precioza-logo-script-dourado.png'}
+                alt={brand.name}
+                fill
+                sizes="192px"
+                className="object-contain object-left"
+              />
             </div>
 
-            <p className="font-sans text-xs text-stone max-w-sm leading-relaxed font-light">
+            <p className="font-sans text-[13px] text-stone max-w-sm leading-relaxed">
               {brand.description}
             </p>
 
-            {/* Location & Instagram */}
-            <div className="flex flex-col space-y-2 pt-2 text-xs font-sans text-stone">
-              <div className="flex items-center space-x-2 text-stone">
-                <MapPin className="w-3.5 h-3.5 text-gold flex-shrink-0" />
-                <span>Monte Sião, Minas Gerais — Capital Nacional do Tricô</span>
+            <div className="space-y-3 pt-2 text-xs font-sans text-stone">
+              <div className="flex items-start gap-2.5">
+                <MapPin className="w-4 h-4 text-gold flex-shrink-0 mt-0.5 stroke-[1.5]" />
+                <span>R. Juscelino Kubitscheck de Oliveira, 602, Centro · Monte Sião - MG</span>
               </div>
 
-              {brand.contact.instagramUrl && (
+              <div className="flex items-center gap-4 pt-1">
                 <a
-                  href={brand.contact.instagramUrl}
+                  href={siteConfig.social.instagram}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center space-x-1.5 text-gold hover:text-gold-light transition-colors pt-1"
+                  className="inline-flex items-center gap-1.5 text-stone hover:text-gold transition-colors"
                 >
-                  <Instagram className="w-4 h-4" />
-                  <span>@preciozatricot</span>
+                  <Instagram className="w-4 h-4 text-gold" />
+                  <span>@preciozastore</span>
                 </a>
-              )}
+
+                <button
+                  onClick={handleWhatsApp}
+                  className="inline-flex items-center gap-1.5 text-stone hover:text-gold transition-colors focus:outline-none"
+                >
+                  <MessageCircle className="w-4 h-4 text-gold" />
+                  <span>(35) 99228-7718</span>
+                </button>
+              </div>
             </div>
           </div>
 
-          {/* Quick Navigation Links */}
-          <div className="md:col-span-3 space-y-3">
-            <span className="text-xs uppercase tracking-widest text-gold font-sans block mb-3 font-medium">
+          {/* Coluna 1: Navegação Editorial (~3 colunas) */}
+          <div className="md:col-span-3 space-y-4">
+            <span className="text-[11px] uppercase tracking-[0.24em] text-gold-light font-sans block font-medium">
               Navegação
             </span>
-            <ul className="space-y-2.5 text-xs font-sans text-stone">
-              {siteConfig.navigation.map((item) => (
+            <ul className="space-y-3 text-xs font-sans text-stone">
+              {[
+                { label: 'A Coleção', href: '#colecao' },
+                { label: 'A Loja', href: '#loja' },
+                { label: 'Destaques', href: '#destaques' },
+                { label: 'Lookbook', href: '#lookbook' },
+                { label: 'Catálogo Completo', href: '#catalogo' },
+                { label: 'Visite a Boutique', href: '#visite' },
+              ].map((item) => (
                 <li key={item.href}>
                   <a
                     href={item.href}
                     onClick={(e) => handleNavClick(item.href, e)}
-                    className="hover:text-ivory transition-colors block py-0.5 relative w-max after:absolute after:bottom-0 after:left-0 after:w-full after:h-[1px] after:bg-gold after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:origin-left"
+                    className="hover:text-ivory transition-colors block py-0.5"
                   >
                     {item.label}
                   </a>
@@ -90,33 +97,40 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Boutique Details Column */}
-          <div className="md:col-span-4 space-y-3">
-            <span className="text-xs uppercase tracking-widest text-gold font-sans block mb-3 font-medium">
-              Atendimento & Consultoria
+          {/* Coluna 2: Atendimento & WhatsApp (~4 colunas) Fundo #141311 com Cantos Retos */}
+          <div className="md:col-span-4 space-y-4">
+            <span className="text-[11px] uppercase tracking-[0.24em] text-gold-light font-sans block font-medium">
+              Atendimento Consultivo
             </span>
-            <div className="p-5 rounded-xl bg-bg-soft border border-line text-xs font-sans text-stone leading-relaxed space-y-2">
+            <div className="p-6 bg-bg-raised border border-line text-xs font-sans text-stone leading-relaxed space-y-3">
               <p className="text-ivory font-medium">
-                Precioza Tricot · Moda Autoral e Malharia Nobre
+                Precioza Tricot · Alta Malharia Autoral
               </p>
-              <p className="text-stone font-light">
-                Consultoria personalizada de medidas e disponibilidade via WhatsApp.
+              <p>
+                Dúvidas sobre disponibilidade, tamanhos ou detalhes de modelagem? Nossa equipe
+                está à disposição para orientar cada escolha via WhatsApp.
               </p>
-              <div className="pt-2 border-t border-line flex items-center justify-between text-[11px]">
-                <span className="text-gold-light">Horário: Seg a Sáb, 9h às 18h</span>
-                <span className="text-stone">Envios Brasil</span>
+              <div className="pt-3 border-t border-line">
+                <button
+                  onClick={handleWhatsApp}
+                  className="btn-thread-dark w-full !py-2.5 justify-center text-[10px]"
+                >
+                  <MessageCircle className="w-3.5 h-3.5 text-gold" />
+                  <span>Iniciar Conversa no WhatsApp</span>
+                  <span>→</span>
+                </button>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Bottom Credits & Copyright */}
+        {/* Linha Inferior com Créditos */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-[11px] text-stone font-sans gap-4">
-          <p>© {currentYear} Precioza Tricot · Todos os direitos reservados.</p>
-          <div className="flex items-center space-x-3 text-stone">
-            <span>Experiência Digital por OpenPage</span>
-            <span>·</span>
-            <span>Monte Sião - MG</span>
+          <p>© {currentYear} PRECIOZA TRICOT. Todos os direitos reservados.</p>
+          <div className="flex items-center gap-3 text-stone/80 text-[10px] uppercase tracking-widest">
+            <span>Monte Sião · Minas Gerais</span>
+            <span>—</span>
+            <span>Site por OpenPage</span>
           </div>
         </div>
       </div>

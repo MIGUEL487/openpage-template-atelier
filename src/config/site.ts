@@ -33,13 +33,13 @@ export const siteConfig = {
       'moda autoral',
       'monte sião',
       'tricot refinado',
-      'alta costura',
+      'alta malharia',
       'vestidos tricot',
     ],
     locale: 'pt_BR',
   },
 
-  // Configuração central e real do WhatsApp da loja (Regra 3)
+  // Configuração central e real do WhatsApp da loja (Regra 3 & 4)
   // Autorizado pela loja: número 5535992287718, isDemo: false
   whatsapp: {
     phoneNumber: '5535992287718',
@@ -65,19 +65,22 @@ export const siteConfig = {
 
   navigation: [
     { label: 'Coleção', href: '#colecao' },
+    { label: 'A Loja', href: '#loja' },
+    { label: 'Destaques', href: '#destaques' },
     { label: 'Lookbook', href: '#lookbook' },
     { label: 'Catálogo', href: '#catalogo' },
-    { label: 'A Marca', href: '#marca' },
     { label: 'Contato', href: '#contato' },
   ],
 
   contact: {
-    address: 'Monte Sião, Minas Gerais — Capital Nacional do Tricô',
-    hours: 'Segunda a Sábado, 9h às 18h',
-    email: 'contato@preciozatricot.com.br',
+    address: 'R. Juscelino Kubitscheck de Oliveira, 602, Centro, Monte Sião, MG, 37580-000',
+    city: 'Monte Sião - MG',
+    googleMapsUrl: 'https://maps.google.com/?q=R.+Juscelino+Kubitscheck+de+Oliveira,+602,+Centro,+Monte+Si%C3%A3o+-+MG,+37580-000',
+    phone: '(35) 99228-7718',
   },
 
   social: {
-    instagram: 'https://instagram.com/preciozatricot',
+    instagram: 'https://www.instagram.com/preciozastore/',
+    instagramHandle: '@preciozastore',
   },
 };

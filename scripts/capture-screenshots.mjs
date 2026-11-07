@@ -49,41 +49,39 @@ async function main() {
   console.log(`Starting local server on http://127.0.0.1:${PORT}...`);
   const server = await serveStatic(PORT);
 
-  const destDir = path.join(baseDir, 'public', 'brands', 'precioza');
-  if (!fs.existsSync(destDir)) {
-    fs.mkdirSync(destDir, { recursive: true });
+  const refDir = path.join(baseDir, 'reference');
+  if (!fs.existsSync(refDir)) {
+    fs.mkdirSync(refDir, { recursive: true });
   }
 
-  const desktopShot = path.join(destDir, 'screenshot-desktop.png');
-  const mobileShot = path.join(destDir, 'screenshot-mobile.png');
-  const tmpProfile = fs.mkdtempSync(path.join(os.tmpdir(), 'chrome-ss-'));
+  const desktopShot = path.join(refDir, 'redesign-desktop.png');
+  const mobileShot = path.join(refDir, 'redesign-mobile.png');
+  const tmpProfile = fs.mkdtempSync(path.join(os.tmpdir(), 'chrome-audit-'));
 
   try {
-    console.log('Capturing Desktop screenshot via HTTP...');
+    console.log('Capturing Desktop screenshot (1440x900)...');
     execFileSync(chromePath, [
       '--headless=new',
       `--user-data-dir=${tmpProfile}`,
       `--screenshot=${desktopShot}`,
-      '--window-size=1280,900',
+      '--window-size=1440,900',
       '--hide-scrollbars',
-      '--virtual-time-budget=3000',
       '--disable-gpu',
       `http://127.0.0.1:${PORT}/`,
-    ], { timeout: 15000 });
-    console.log('Saved:', desktopShot);
+    ], { timeout: 20000 });
+    console.log('Saved:', desktopShot, 'size:', fs.statSync(desktopShot).size);
 
-    console.log('Capturing Mobile screenshot via HTTP (390x844)...');
+    console.log('Capturing Mobile screenshot (390x844)...');
     execFileSync(chromePath, [
       '--headless=new',
       `--user-data-dir=${tmpProfile}`,
       `--screenshot=${mobileShot}`,
       '--window-size=390,844',
       '--hide-scrollbars',
-      '--virtual-time-budget=3000',
       '--disable-gpu',
       `http://127.0.0.1:${PORT}/`,
-    ], { timeout: 15000 });
-    console.log('Saved:', mobileShot);
+    ], { timeout: 20000 });
+    console.log('Saved:', mobileShot, 'size:', fs.statSync(mobileShot).size);
   } finally {
     server.close();
     try {

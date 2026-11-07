@@ -29,7 +29,7 @@
     color: #0B0B0A;
   }
 
-  /* Scrollbar estético discreto escuro */
+  /* Scrollbar estético discreto escuro com cantos retos */
   ::-webkit-scrollbar {
     width: 6px;
   }
@@ -40,7 +40,6 @@
 
   ::-webkit-scrollbar-thumb {
     background: #2A2723;
-    border-radius: 9999px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
@@ -51,6 +50,142 @@
 /* Grão fino cinematográfico para unificação das fotos */
 .bg-grain {
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.035'/%3E%3C/svg%3E");
+}
+
+/* Kicker horizontal com linha fina conforme referência */
+.kicker-line-gold {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+}
+.kicker-line-gold::after {
+  content: '';
+  display: inline-block;
+  width: 56px;
+  height: 1px;
+  background-color: #8A7248;
+}
+
+.kicker-line-ivory {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+}
+.kicker-line-ivory::after {
+  content: '';
+  display: inline-block;
+  width: 56px;
+  height: 1px;
+  background-color: #D9CFBF;
+}
+
+/* Botão padrão reto 1px com hover dourado */
+.btn-thread-dark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 28px;
+  border: 1px solid rgba(243, 237, 226, 0.4);
+  background-color: transparent;
+  color: #F3EDE2;
+  font-family: var(--font-inter);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  border-radius: 0;
+}
+.btn-thread-dark:hover {
+  background-color: #B19462;
+  border-color: #B19462;
+  color: #0B0B0A;
+}
+
+.btn-thread-light {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 28px;
+  border: 1px solid #16140F;
+  background-color: transparent;
+  color: #16140F;
+  font-family: var(--font-inter);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  border-radius: 0;
+}
+.btn-thread-light:hover {
+  background-color: #B19462;
+  border-color: #B19462;
+  color: #0B0B0A;
+}
+
+/* Link editorial com seta e sublinhado expansível */
+.link-editorial-dark {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-inter);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: #F3EDE2;
+  position: relative;
+  padding-bottom: 4px;
+  transition: color 0.3s ease;
+}
+.link-editorial-dark::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 1px;
+  background-color: #B19462;
+  transition: transform 0.3s ease;
+  transform-origin: left;
+}
+.link-editorial-dark:hover {
+  color: #D6BC8B;
+}
+
+.link-editorial-light {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-inter);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: #16140F;
+  position: relative;
+  padding-bottom: 4px;
+  transition: color 0.3s ease;
+}
+.link-editorial-light::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 1px;
+  background-color: #16140F;
+  transition: transform 0.3s ease;
+  transform-origin: left;
+}
+.link-editorial-light:hover {
+  color: #8A7248;
+}
+.link-editorial-light:hover::after {
+  background-color: #8A7248;
 }
 
 /* Fallback de segurança contra bugs de animação */
@@ -73,20 +208,4 @@ html:not(.js-motion) .motion-ready {
 
 .animate-fadeIn {
   animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes marquee {
-  0% {
-    transform: translateX(0%);
-  }
-  100% {
-    transform: translateX(-50%);
-  }
-}
-
-.animate-marquee {
-  display: flex;
-  width: max-content;
-  animation: marquee 25s linear infinite;
-  will-change: transform;
 }
